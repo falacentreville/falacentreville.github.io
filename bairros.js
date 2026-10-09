@@ -15,7 +15,7 @@ window.BAIRROS = {
     tag: "Comitê pela Democracia · Centre Ville",
     faixa: "Desde 16 de julho de 1982, na luta",
     lead: "Este bairro nasceu de gente que não esperou ninguém fazer por ela. Agora a gente quer te ouvir.",
-    memoria_dica: "A ocupação, uma festa, uma luta, uma pessoa. Sem nome completo de ninguém.",
+    memoria_dica: "A ocupação, uma festa, o time, o campo, uma luta, uma pessoa. Sem nome completo de ninguém.",
     foto: {
       src: "img/ocupacao-1982.jpg", w: 472, h: 288,
       alt: "Foto antiga em preto e branco: moradores caminhando juntos pela rua do Centre Ville, na época da ocupação",
