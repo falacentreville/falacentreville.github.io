@@ -71,6 +71,7 @@ button{font:inherit;cursor:pointer}
       <button class="btn btn-p" id="copiar" type="button">Copiar resumo</button>
       <button class="btn btn-s" id="atualizar" type="button">Atualizar</button>
     </div>
+    <label class="check"><input type="checkbox" id="ver-piloto"> Mostrar respostas do piloto (marcadas como teste)</label>
     <label class="filtro" id="filtro-bairro" hidden>Bairro
       <select id="bairro-sel"></select>
     </label>
@@ -132,9 +133,10 @@ function el(tag, cls, txt){ const e = document.createElement(tag); if(cls) e.cla
 function desenhar(){
   const n = linhas.length;
   $("n").textContent = n;
-  $("cautela").textContent = n < 30
+  const piloto = linhas.filter(ehPiloto).length;
+  $("cautela").textContent = (piloto ? `Inclui ${piloto} resposta(s) do piloto (teste). ` : "") + (n < 30
     ? "Ainda são poucas respostas. Use como pista, não como conclusão. É uma escuta voluntária: mostra quem respondeu, não o bairro todo."
-    : "É uma escuta voluntária: mostra quem respondeu, não o bairro todo. Ao divulgar, diga sempre quantas pessoas responderam.";
+    : "É uma escuta voluntária: mostra quem respondeu, não o bairro todo. Ao divulgar, diga sempre quantas pessoas responderam.");
   const box = $("blocos"); box.innerHTML = "";
 
   CONTAGENS.forEach(c => {
@@ -173,7 +175,9 @@ function desenhar(){
 
 function resumo(){
   const n = linhas.length, hoje = new Date().toLocaleDateString("pt-BR");
-  const prefixo = (DEMO ? ["(EXEMPLO COM DADOS INVENTADOS)"] : []).concat(["RESUMO INTERNO DO COMITÊ · não publicar como está"]);
+  const prefixo = (DEMO ? ["(EXEMPLO COM DADOS INVENTADOS)"] : [])
+    .concat(linhas.some(ehPiloto) ? ["(INCLUI RESPOSTAS DO PILOTO)"] : [])
+    .concat(["RESUMO INTERNO DO COMITÊ · não publicar como está"]);
   const bloco = chave => CONTAGENS.find(x => (x.chave || x.id) === chave);
   const top = (chave, k=3) => {
     const r = contar(bloco(chave));
@@ -194,6 +198,15 @@ function resumo(){
     `Por que muita gente muda de voto, na opinião de quem respondeu: ${top("por_que_mudam")}.`,
     `Em quem confiam para se informar: ${top("confia", 2)}.`
   ].join("\n");
+}
+
+// piloto: respostas marcadas como teste feitas na versão atual do questionário
+// (os testes técnicos antigos ficam sempre de fora)
+let brutas = [];
+const ehPiloto = l => l.origem === "teste" && /^\d{4}-\d{2}-\d{2}-v([3-9]|\d\d)/.test(l.versao || "");
+function montarTodas(){
+  const comPiloto = $("ver-piloto").checked;
+  todas = brutas.filter(l => l.origem !== "teste" || (comPiloto && ehPiloto(l)));
 }
 
 function prepararFiltro(){
@@ -220,7 +233,8 @@ async function carregar(chave){
     const r = await fetch(ENDPOINT, { method:"POST", body: JSON.stringify({ acao:"painel", chave }) });
     const j = await r.json();
     if(j.erro){ $("msg").textContent = j.erro; return; }
-    todas = (j.linhas || []).filter(l => l.origem !== "teste");
+    brutas = j.linhas || [];
+    montarTodas();
     $("msg").textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}) + ".";
     $("entrar").hidden = true; $("resultado").hidden = false;
     prepararFiltro(); aplicarFiltro();
@@ -239,6 +253,7 @@ $("entrar").onsubmit = ev => {
 };
 $("atualizar").onclick = () => DEMO ? aplicarFiltro() : carregar($("chave").value);
 $("bairro-sel").onchange = () => { filtroBairro = $("bairro-sel").value; aplicarFiltro(); };
+$("ver-piloto").onchange = () => { montarTodas(); prepararFiltro(); aplicarFiltro(); };
 $("copiar").onclick = async () => {
   const t = resumo();
   try{ await navigator.clipboard.writeText(t); $("msg").textContent = "Resumo copiado. É só colar no WhatsApp."; }
@@ -299,7 +314,8 @@ function dadosDemo(){
 if(DEMO){
   $("demo-aviso").hidden = false;
   $("entrar").hidden = true; $("resultado").hidden = false;
-  todas = dadosDemo();
+  brutas = dadosDemo();
+  montarTodas();
   $("msg").textContent = "Exemplo com 24 respostas inventadas.";
   prepararFiltro(); aplicarFiltro();
 } else {

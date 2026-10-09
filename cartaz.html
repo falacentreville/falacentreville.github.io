@@ -30,6 +30,8 @@ h1 span{background:#ffc629;padding:0 3mm;box-decoration-break:clone;-webkit-box-
 .pontos b{display:block;font-size:14pt;font-weight:400;color:#555}
 .mire{font-size:17pt;font-weight:700;margin:2mm 0 0}
 .url{font-family:"Bebas Neue",Impact,sans-serif;font-size:26pt;letter-spacing:.5px;margin:1mm 0 5mm}
+.selo-teste{display:none;background:#ff3d7f;color:#fff;font-weight:700;text-align:center;padding:2mm;margin:-6mm 0 4mm;font-size:14pt;border-radius:2mm}
+.folha.teste .selo-teste{display:block}
 .foto{margin-top:auto;display:grid;grid-template-columns:62mm 1fr;gap:6mm;align-items:end;border-top:1mm solid #151311;padding-top:5mm}
 .foto img{width:100%;height:auto;display:block;filter:grayscale(1) contrast(1.1)}
 .foto p{margin:0;font-size:12pt;line-height:1.35}
@@ -48,6 +50,7 @@ h1 span{background:#ffc629;padding:0 3mm;box-decoration-break:clone;-webkit-box-
 </div>
 
 <main class="folha">
+  <div class="selo-teste">VERSÃO DE TESTE · não imprimir para colar</div>
   <div class="tag" id="tag">Comitê pela Democracia do Centre Ville</div>
   <h1><span>Fala,</span> <svg class="mega" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M20 41 L21 53 L28 53 L28 44" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="4" y="25" width="9" height="14" rx="2" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M12 25 L37 13 L37 51 L12 39 Z" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="36" y="10" width="7" height="44" rx="3.5" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M49 24 Q54 32 49 40" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M55 18 Q63 32 55 46" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg><br><span id="titulo-bairro">Centre Ville!</span></h1>
   <p class="sub">A gente quer ouvir você.</p>
@@ -94,7 +97,10 @@ h1 span{background:#ffc629;padding:0 3mm;box-decoration-break:clone;-webkit-box-
   // endereço da página inicial, onde quer que o site esteja publicado
   const inicio = new URL("./", location.href);
   const extra = B.id === "centreville" ? "" : `bairro=${B.id}&`;
-  const alvo = new URL(`./?${extra}origem=cartaz`, location.href).href;
+  // cartaz.html?teste=1: o QR abre a escuta marcada como teste (fora das contas)
+  const TESTE = new URLSearchParams(location.search).has("teste");
+  if (TESTE) document.querySelector(".folha").classList.add("teste");
+  const alvo = new URL(`./?${extra}origem=${TESTE ? "teste" : "cartaz"}`, location.href).href;
   $("url").textContent = (inicio.host + inicio.pathname).replace(/\/$/, "") + (extra ? `/?bairro=${B.id}` : "");
   // no celular, encolhe a folha para caber na tela (não afeta a impressão)
   function ajustar(){
