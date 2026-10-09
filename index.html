@@ -494,7 +494,7 @@ async function concluir(){
   const fila = ler("cv_fila", []); fila.push(reg); guardar("cv_fila", fila);
   const total = ler("cv_total", 0)+1; guardar("cv_total", total);
   mostrar("fim");
-  $("envio").textContent = "Enviando…";
+  $("envio").textContent = "Enviando… pode seguir: a resposta fica guardada neste celular até chegar.";
   const pendentes = await esvaziarFila();
   $("envio").textContent = pendentes===0 ? "Resposta enviada. ✔"
     : CONFIG.ENDPOINT ? `Sem internet agora: ${pendentes} resposta(s) guardada(s) neste celular. Serão enviadas sozinhas quando a internet voltar.`

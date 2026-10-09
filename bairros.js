@@ -1,3 +1,7 @@
+/* Links por bairro DESLIGADOS por enquanto: o site é só "Fala, Centreville!".
+ * Para ligar no futuro, troque para true (e pense uma capa própria para os bairros irmãos). */
+window.BAIRROS_ATIVOS = false;
+
 /* Bairros com link próprio: falacentreville.github.io/?bairro=ID
  * Para incluir um bairro, copie o bloco do Centreville, troque o ID e os textos.
  * Campos opcionais: faixa, foto, mural, memoria_dica, cartaz.
@@ -40,7 +44,8 @@ window.BAIRRO_GENERICO = {
 
 /* Lê ?bairro= do endereço. Sem parâmetro, é o Centreville. */
 window.lerBairro = function () {
-  const bruto = new URLSearchParams(location.search).get("bairro") || "centreville";
+  const pedido = window.BAIRROS_ATIVOS ? new URLSearchParams(location.search).get("bairro") : null;
+  const bruto = pedido || "centreville";
   const id = bruto.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40) || "centreville";
   const dados = window.BAIRROS[id] || window.BAIRRO_GENERICO;
   const nome = dados.nome || "bairro";
