@@ -101,7 +101,7 @@ const CONTAGENS = [
   { id:"idade", titulo:"Faixa de idade" },
   { id:"genero", titulo:"Gênero" },
   { id:"relacao", titulo:"Ligação com o bairro" },
-  { id:"origem", titulo:"Por onde chegou" },
+  { id:"origem", titulo:"Por onde chegou", nomes:{ zap:"WhatsApp", face:"Facebook", insta:"Instagram", cartaz:"Cartaz (QR code)", entrevista:"Entrevistadores", link:"Link direto", teste:"Teste (piloto)" } },
   { id:"entrevistador", titulo:"Entrevistas por voluntário" }
 ];
 const FALAS = [
@@ -148,7 +148,7 @@ function desenhar(){
     b.appendChild(el("p", "base", `${r.resp} responderam${c.base ? " (" + c.base + ")" : ""}${c.multi ? ". Cada pessoa pôde marcar mais de uma." : "."}${r.resp < 20 ? " Poucas respostas: use como pista." : ""}`));
     r.itens.forEach(([rot, q]) => {
       const d = el("div", "barra");
-      const t = el("div", "rot"); t.appendChild(el("span", null, rot)); t.appendChild(el("span", null, `${q} de ${r.resp}`));
+      const t = el("div", "rot"); t.appendChild(el("span", null, c.nomes ? (c.nomes[rot] || rot) : rot)); t.appendChild(el("span", null, `${q} de ${r.resp}`));
       const tr = el("div", "trilho"); const i = el("i"); i.style.width = (100*q/Math.max(r.resp,1)) + "%"; tr.appendChild(i);
       d.appendChild(t); d.appendChild(tr); b.appendChild(d);
     });
