@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cartaz · Fala, Centreville!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#d9d4cc;font-family:Rubik,system-ui,sans-serif;color:#151311}
+.barra{max-width:210mm;margin:12px auto;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:0 12px;font-size:15px}
+.barra button{font:inherit;font-weight:700;background:#151311;color:#ffc629;border:0;border-radius:10px;padding:10px 16px;cursor:pointer}
+.folha{width:210mm;min-height:297mm;margin:0 auto 24px;background:#fff;padding:14mm 14mm 10mm;display:flex;flex-direction:column;box-shadow:0 4px 24px rgba(0,0,0,.25)}
+.tag{font-family:"Bebas Neue",Impact,sans-serif;font-size:22pt;letter-spacing:1px}
+h1{font-family:"Bebas Neue",Impact,sans-serif;font-weight:400;font-size:112pt;line-height:.86;margin:4mm 0 0;text-transform:uppercase}
+h1 span{background:#ffc629;padding:0 3mm;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.sub{font-size:26pt;font-weight:700;margin:6mm 0 2mm}
+.meio{display:grid;grid-template-columns:88mm 1fr;gap:8mm;align-items:center;margin:4mm 0}
+#qr{width:88mm;height:88mm;padding:3mm;border:1.5mm solid #151311;border-radius:4mm;background:#fff}
+#qr img,#qr canvas{width:100%!important;height:auto!important;display:block}
+.pontos{list-style:none;margin:0;padding:0;font-size:19pt;font-weight:500}
+.pontos li{padding:2.5mm 0;border-bottom:.4mm solid #cfc4b2}
+.pontos li:last-child{border:0}
+.pontos b{display:block;font-size:14pt;font-weight:400;color:#555}
+.mire{font-size:17pt;font-weight:700;margin:2mm 0 0}
+.url{font-family:"Bebas Neue",Impact,sans-serif;font-size:26pt;letter-spacing:.5px;margin:1mm 0 5mm}
+.foto{margin-top:auto;display:grid;grid-template-columns:62mm 1fr;gap:6mm;align-items:end;border-top:1mm solid #151311;padding-top:5mm}
+.foto img{width:100%;height:auto;display:block;filter:grayscale(1) contrast(1.1)}
+.foto p{margin:0;font-size:12pt;line-height:1.35}
+.foto small{display:block;font-size:9pt;color:#555;margin-top:2mm}
+@media print{
+  body{background:#fff}
+  .barra{display:none}
+  .folha{margin:0;box-shadow:none;width:auto;min-height:auto;height:297mm;zoom:1!important}
+}
+</style>
+</head>
+<body>
+<div class="barra">
+  <span>Cartaz A4. O QR code leva para o endereço onde este cartaz está aberto.</span>
+  <button type="button" onclick="print()">Imprimir</button>
+</div>
+
+<main class="folha">
+  <div class="tag">Comitê pela Democracia do Centreville</div>
+  <h1><span>Fala,</span><br><span>Centreville!</span></h1>
+  <p class="sub">A gente quer ouvir você.</p>
+
+  <div class="meio">
+    <div id="qr" role="img" aria-label="QR code para a escuta"></div>
+    <ul class="pontos">
+      <li>3 minutos<b>poucas perguntas</b></li>
+      <li>Sem nome<b>sem telefone, sem endereço</b></li>
+      <li>Pode falar<b>no microfone, sem digitar</b></li>
+    </ul>
+  </div>
+
+  <p class="mire">Aponte a câmera do celular para o quadrado.</p>
+  <p class="url" id="url"></p>
+
+  <div class="foto">
+    <img src="img/ocupacao-1982.jpg" alt="Foto antiga dos primeiros moradores do Centreville caminhando juntos">
+    <p>Desde 16 de julho de 1982, o Centreville se faz com gente que não espera ninguém fazer por ela. Conte o que pesa na sua casa e o que precisa mudar.
+      <small>Escuta anônima e voluntária do Comitê pela Democracia do Centreville. Não é pesquisa eleitoral. Foto: página “Centreville é nosso”.</small>
+    </p>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  // endereço da página inicial, onde quer que o site esteja publicado
+  const inicio = new URL("./", location.href);
+  const alvo = new URL("./?origem=cartaz", location.href).href;
+  document.getElementById("url").textContent = (inicio.host + inicio.pathname).replace(/\/$/, "");
+  // no celular, encolhe a folha para caber na tela (não afeta a impressão)
+  function ajustar(){
+    const f = document.querySelector(".folha");
+    f.style.zoom = "";
+    const w = f.offsetWidth;
+    if (innerWidth < w + 16) f.style.zoom = (innerWidth - 16) / w;
+  }
+  ajustar(); addEventListener("resize", ajustar);
+  if (window.QRCode) {
+    new QRCode(document.getElementById("qr"), { text: alvo, width: 640, height: 640, correctLevel: QRCode.CorrectLevel.M });
+  } else {
+    document.getElementById("qr").textContent = "Sem internet para gerar o QR code.";
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#151311">
+<title>Painel da escuta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--muro:#151311;--muro2:#211d1a;--tinta:#fff7e8;--suave:#cfc4b2;--amarelo:#ffc629;--laranja:#ff6b2c;--rosa:#ff3d7f;--verde:#2bb673;--linha:#3a332d}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--muro);color:var(--tinta)}
+body{font-family:Rubik,system-ui,sans-serif;font-size:17px;line-height:1.45}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 60px}
+h1,h2{font-family:"Bebas Neue",Impact,sans-serif;font-weight:400;letter-spacing:.5px;line-height:1;margin:0}
+h1{font-size:48px;color:var(--amarelo);margin:8px 0}
+h2{font-size:30px;margin:0 0 4px}
+.aviso{background:var(--muro2);border-left:4px solid var(--rosa);padding:10px 12px;border-radius:8px;font-size:15px;color:var(--suave)}
+form{display:grid;gap:12px;margin:16px 0}
+label{display:grid;gap:6px;font-weight:500}
+input[type=password]{font:inherit;padding:12px;border-radius:12px;border:2px solid var(--linha);background:#0f0d0c;color:var(--tinta)}
+.check{display:flex;gap:10px;align-items:center;font-weight:400}
+.check input{width:24px;height:24px;accent-color:var(--amarelo)}
+button{font:inherit;cursor:pointer}
+.btn{min-height:54px;border:0;border-radius:14px;font-weight:700;font-size:19px;padding:12px 16px}
+.btn-p{background:var(--amarelo);color:#1a1200}
+.btn-s{background:transparent;border:2px solid var(--linha);color:var(--tinta)}
+.linha-botoes{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.linha-botoes .btn{flex:1 1 160px}
+#msg{margin:10px 0;color:var(--suave)}
+.numero{font-family:"Bebas Neue",Impact,sans-serif;font-size:72px;line-height:1;color:var(--amarelo)}
+.bloco{background:var(--muro2);border:2px solid var(--linha);border-radius:16px;padding:14px;margin:14px 0}
+.base{font-size:14px;color:var(--suave);margin:0 0 10px}
+.barra{margin:8px 0}
+.barra .rot{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.barra .rot span:last-child{white-space:nowrap;color:var(--suave)}
+.barra .trilho{height:12px;background:#0f0d0c;border-radius:99px;overflow:hidden;margin-top:4px}
+.barra .trilho i{display:block;height:100%;background:linear-gradient(90deg,var(--amarelo),var(--laranja))}
+.fala{border-left:3px solid var(--verde);padding:6px 10px;margin:8px 0;background:#191613;border-radius:6px}
+.fala small{display:block;color:var(--suave);font-size:12px;margin-top:4px}
+.vazio{color:var(--suave);font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Painel da escuta</h1>
+  <p class="aviso">Só para quem cuida das respostas. Antes de divulgar qualquer frase, tire nomes, apelidos, endereços e detalhes que permitam saber quem falou. Divulgue sempre números somados.</p>
+
+  <form id="entrar">
+    <label>Senha do painel
+      <input type="password" id="chave" autocomplete="current-password" required>
+    </label>
+    <label class="check"><input type="checkbox" id="lembrar"> Lembrar a senha neste aparelho</label>
+    <button class="btn btn-p" type="submit">Ver respostas</button>
+  </form>
+  <div id="msg"></div>
+
+  <section id="resultado" hidden>
+    <div class="numero" id="n">0</div>
+    <div>respostas até agora</div>
+    <p class="aviso" id="cautela"></p>
+    <div class="linha-botoes">
+      <button class="btn btn-p" id="copiar" type="button">Copiar resumo</button>
+      <button class="btn btn-s" id="atualizar" type="button">Atualizar</button>
+    </div>
+    <div id="blocos"></div>
+  </section>
+</div>
+
+<script>
+/* mesma URL do Apps Script usada no index.html */
+const ENDPOINT = "";
+
+const CONTAGENS = [
+  { id:"votou", titulo:"Conseguiu votar no 1º turno?" },
+  { id:"motivos", titulo:"O que atrapalhou", multi:true,
+    filtro:l => l.votou==="Não votei" || l.votou==="Justifiquei", base:"entre quem não votou ou justificou" },
+  { id:"dia_a_dia", titulo:"O que mais pesa em casa", multi:true },
+  { id:"medos", titulo:"Medo de perder ou ver piorar", multi:true },
+  { id:"confia", titulo:"Em quem confia para se informar", multi:true },
+  { id:"idade", titulo:"Faixa de idade" },
+  { id:"relacao", titulo:"Ligação com o bairro" },
+  { id:"origem", titulo:"Por onde chegou" },
+  { id:"entrevistador", titulo:"Entrevistas por voluntário" }
+];
+const FALAS = [
+  { id:"motivos_texto", titulo:"Por que não votou, nas palavras das pessoas" },
+  { id:"medos_texto", titulo:"Medos, nas palavras das pessoas" },
+  { id:"mudanca", titulo:"O que mudaria" },
+  { id:"memoria", titulo:"Histórias do bairro" }
+];
+
+const $ = id => document.getElementById(id);
+const seguro = (fn, p) => { try { return fn(); } catch(e) { return p; } };
+let linhas = [];
+
+function contar(c){
+  const base = c.filtro ? linhas.filter(c.filtro) : linhas;
+  const resp = base.filter(l => String(l[c.id]||"").trim());
+  const conta = {};
+  resp.forEach(l => String(l[c.id]).split(" | ").forEach(v => {
+    v = v.trim(); if(v) conta[v] = (conta[v]||0) + 1;
+  }));
+  return { base: base.length, resp: resp.length, itens: Object.entries(conta).sort((a,b) => b[1]-a[1]) };
+}
+
+function el(tag, cls, txt){ const e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; }
+
+function desenhar(){
+  const n = linhas.length;
+  $("n").textContent = n;
+  $("cautela").textContent = n < 30
+    ? "Ainda são poucas respostas. Use como pista, não como conclusão. É uma escuta voluntária: mostra quem respondeu, não o bairro todo."
+    : "É uma escuta voluntária: mostra quem respondeu, não o bairro todo. Ao divulgar, diga sempre quantas pessoas responderam.";
+  const box = $("blocos"); box.innerHTML = "";
+
+  CONTAGENS.forEach(c => {
+    const r = contar(c);
+    if(!r.itens.length) return;
+    const b = el("div", "bloco");
+    b.appendChild(el("h2", null, c.titulo));
+    b.appendChild(el("p", "base", `${r.resp} responderam${c.base ? " (" + c.base + ")" : ""}${c.multi ? ". Cada pessoa pôde marcar mais de uma." : "."}`));
+    r.itens.forEach(([rot, q]) => {
+      const d = el("div", "barra");
+      const t = el("div", "rot"); t.appendChild(el("span", null, rot)); t.appendChild(el("span", null, `${q} de ${r.resp}`));
+      const tr = el("div", "trilho"); const i = el("i"); i.style.width = (100*q/Math.max(r.resp,1)) + "%"; tr.appendChild(i);
+      d.appendChild(t); d.appendChild(tr); b.appendChild(d);
+    });
+    box.appendChild(b);
+  });
+
+  FALAS.forEach(f => {
+    const lista = linhas.filter(l => String(l[f.id]||"").trim()).reverse();
+    const b = el("div", "bloco");
+    b.appendChild(el("h2", null, f.titulo));
+    b.appendChild(el("p", "base", `${lista.length} falas. As mais novas primeiro.`));
+    if(!lista.length) b.appendChild(el("p", "vazio", "Nada ainda."));
+    lista.forEach(l => {
+      const q = el("div", "fala", l[f.id]);
+      // a planilha pode devolver a data já formatada; só converte se vier no formato ISO
+      const quando = /^\d{4}-\d{2}-\d{2}T/.test(l.quando)
+        ? new Date(l.quando).toLocaleString("pt-BR", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"})
+        : String(l.quando || "");
+      q.appendChild(el("small", null, [quando, l.idade].filter(Boolean).join(" · ")));
+      b.appendChild(q);
+    });
+    box.appendChild(b);
+  });
+}
+
+function resumo(){
+  const n = linhas.length, hoje = new Date().toLocaleDateString("pt-BR");
+  const top = (id, k=3) => {
+    const c = CONTAGENS.find(x => x.id === id), r = contar(c);
+    return r.itens.slice(0,k).map(([rot,q]) => `${rot} (${q} de ${r.resp})`).join("; ") || "sem respostas";
+  };
+  const v = contar(CONTAGENS[0]);
+  const naoVotou = v.itens.filter(([rot]) => rot === "Não votei" || rot === "Justifiquei").reduce((s,[,q]) => s+q, 0);
+  return [
+    `Fala, Centreville! · resumo de ${hoje}`,
+    `${n} respostas. Escuta voluntária: mostra quem respondeu, não o bairro todo.`,
+    `Não votaram no 1º turno: ${naoVotou} de ${v.resp} que responderam.`,
+    `O que atrapalhou: ${top("motivos")}.`,
+    `O que mais pesa em casa: ${top("dia_a_dia")}.`,
+    `Medo de perder ou ver piorar: ${top("medos")}.`,
+    `Em quem confiam para se informar: ${top("confia", 2)}.`
+  ].join("\n");
+}
+
+async function carregar(chave){
+  if(!ENDPOINT){ $("msg").textContent = "O painel ainda não foi ligado à planilha (falta a URL do Apps Script)."; return; }
+  $("msg").textContent = "Carregando…";
+  try{
+    const r = await fetch(ENDPOINT, { method:"POST", body: JSON.stringify({ acao:"painel", chave }) });
+    const j = await r.json();
+    if(j.erro){ $("msg").textContent = j.erro; return; }
+    linhas = j.linhas || [];
+    $("msg").textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}) + ".";
+    $("entrar").hidden = true; $("resultado").hidden = false;
+    desenhar();
+  }catch(e){
+    $("msg").textContent = "Não consegui carregar. Confira a internet e tente de novo.";
+  }
+}
+
+$("entrar").onsubmit = ev => {
+  ev.preventDefault();
+  const chave = $("chave").value;
+  if($("lembrar").checked) seguro(() => localStorage.setItem("cv_chave_painel", chave));
+  else seguro(() => localStorage.removeItem("cv_chave_painel"));
+  carregar(chave);
+};
+$("atualizar").onclick = () => carregar($("chave").value);
+$("copiar").onclick = async () => {
+  const t = resumo();
+  try{ await navigator.clipboard.writeText(t); $("msg").textContent = "Resumo copiado. É só colar no WhatsApp."; }
+  catch(e){ prompt("Copie o resumo:", t); }
+};
+
+const salva = seguro(() => localStorage.getItem("cv_chave_painel"), null);
+if(salva){ $("chave").value = salva; $("lembrar").checked = true; carregar(salva); }
+</script>
+</body>
+</html>

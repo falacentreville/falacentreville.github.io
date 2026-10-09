@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#151311">
+<title>Fala, Centreville!</title>
+<meta name="description" content="Escuta do Comitê pela Democracia do Centreville. Anônima, por voz ou por toque.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --muro:#151311;      /* asfalto */
+  --muro2:#211d1a;
+  --tinta:#fff7e8;     /* texto claro */
+  --suave:#cfc4b2;
+  --amarelo:#ffc629;
+  --laranja:#ff6b2c;
+  --verde:#2bb673;
+  --rosa:#ff3d7f;
+  --azul:#3aa7ff;
+  --linha:#3a332d;
+  --raio:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--muro);color:var(--tinta)}
+body{font-family:Rubik,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:19px;line-height:1.45;
+  min-height:100vh;min-height:100dvh;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255,198,41,.18) 0 120px, transparent 260px),
+    radial-gradient(circle at 92% 22%, rgba(255,61,127,.16) 0 90px, transparent 230px),
+    radial-gradient(circle at 80% 96%, rgba(43,182,115,.16) 0 120px, transparent 280px),
+    var(--muro);
+  background-attachment:fixed}
+.wrap{max-width:620px;margin:0 auto;padding:16px 16px 120px}
+h1,h2,.display{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-weight:400;letter-spacing:.5px;line-height:.95;margin:0}
+a{color:var(--amarelo)}
+button{font:inherit;color:inherit;cursor:pointer}
+.hidden{display:none!important}
+
+/* topo */
+.topo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0 10px}
+.tag{font-family:"Bebas Neue",Impact,sans-serif;font-size:22px;letter-spacing:1px;color:var(--amarelo);
+  transform:rotate(-2deg);display:inline-block}
+.modo{font-size:14px;background:var(--rosa);color:#fff;border-radius:99px;padding:4px 10px;font-weight:700}
+
+/* fotos */
+.foto{margin:6px 0 4px;position:relative}
+.foto img{display:block;width:100%;height:auto;border-radius:14px;border:3px solid var(--tinta);transform:rotate(-1deg);box-shadow:6px 6px 0 var(--laranja)}
+.foto-hist img{filter:sepia(.35) contrast(1.08)}
+.foto figcaption{font-size:13px;color:var(--suave);margin-top:10px}
+
+/* capa */
+.capa h1{font-size:clamp(64px,19vw,112px);text-transform:uppercase;margin:18px 0 6px;
+  text-shadow:4px 4px 0 var(--laranja),8px 8px 0 rgba(0,0,0,.35)}
+.capa h1 span{color:var(--amarelo)}
+.faixa{display:inline-block;background:var(--verde);color:#071a10;font-weight:700;padding:6px 12px;border-radius:8px;
+  transform:rotate(-1.5deg);margin:6px 0 18px;font-size:17px}
+.capa p{margin:0 0 14px;color:var(--tinta)}
+.capa .lead{font-size:22px;font-weight:500}
+.selos{display:grid;gap:10px;margin:18px 0 22px}
+.selo{display:flex;gap:12px;align-items:flex-start;background:var(--muro2);border:2px solid var(--linha);border-radius:14px;padding:12px 14px;font-size:17px}
+.selo b{display:block}
+.selo .ic{font-size:26px;line-height:1}
+.quem{font-size:15px;color:var(--suave);border-left:4px solid var(--amarelo);padding:4px 0 4px 12px;margin:18px 0}
+
+/* botões */
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:64px;border:0;border-radius:var(--raio);
+  font-weight:700;font-size:21px;padding:14px 18px;text-decoration:none}
+.btn-p{background:var(--amarelo);color:#1a1200;box-shadow:0 6px 0 #b8860b}
+.btn-p:active{transform:translateY(4px);box-shadow:0 2px 0 #b8860b}
+.btn-s{background:transparent;border:2px solid var(--linha);color:var(--tinta)}
+.btn-v{background:var(--verde);color:#04170c;box-shadow:0 6px 0 #17774a}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* pergunta */
+.progresso{height:10px;background:var(--muro2);border-radius:99px;overflow:hidden;margin:6px 0 18px;border:1px solid var(--linha)}
+.progresso i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--amarelo),var(--laranja),var(--rosa));transition:width .3s}
+.passo-n{font-size:15px;color:var(--suave);margin-bottom:6px}
+.pergunta h2{font-size:clamp(38px,10vw,52px);margin:0 0 8px}
+.dica{color:var(--suave);font-size:17px;margin:0 0 14px}
+.ouvir{display:inline-flex;align-items:center;gap:8px;background:var(--muro2);border:2px solid var(--azul);color:var(--tinta);
+  border-radius:99px;padding:8px 16px;font-size:17px;font-weight:500;margin:0 0 16px}
+.ouvir.ativo{background:var(--azul);color:#00152a}
+.opcoes{display:grid;gap:10px;margin:0 0 16px}
+.op{display:flex;align-items:center;gap:14px;text-align:left;width:100%;min-height:62px;padding:12px 16px;border-radius:16px;
+  background:var(--muro2);border:3px solid var(--linha);font-size:20px;font-weight:500}
+.op .marca{flex:0 0 30px;height:30px;border-radius:50%;border:3px solid var(--suave);display:grid;place-items:center;font-size:18px}
+.op.multi .marca{border-radius:8px}
+.op[aria-pressed="true"]{border-color:var(--amarelo);background:#2c2410}
+.op[aria-pressed="true"] .marca{background:var(--amarelo);border-color:var(--amarelo);color:#1a1200}
+.op[aria-pressed="true"] .marca::after{content:"✓";font-weight:700}
+
+/* fala */
+.fala{background:var(--muro2);border:2px dashed var(--linha);border-radius:var(--raio);padding:14px;margin:4px 0 16px}
+.fala label{display:block;font-weight:500;margin-bottom:10px}
+.mic{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:76px;border:0;border-radius:var(--raio);
+  background:var(--rosa);color:#fff;font-size:22px;font-weight:700;box-shadow:0 6px 0 #a3194a}
+.mic .bola{width:18px;height:18px;border-radius:50%;background:#fff}
+.mic.gravando{background:#e0002f}
+.mic.gravando .bola{animation:pulsa 1s infinite}
+@keyframes pulsa{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.5}}
+textarea{width:100%;min-height:110px;margin-top:12px;border-radius:14px;border:2px solid var(--linha);background:#0f0d0c;color:var(--tinta);
+  font:inherit;font-size:19px;padding:12px;resize:vertical}
+textarea:focus,.op:focus-visible,.btn:focus-visible,.mic:focus-visible{outline:3px solid var(--azul);outline-offset:2px}
+.aviso-voz{font-size:15px;color:var(--suave);margin:8px 0 0}
+
+/* rodapé de navegação fixo */
+.nav{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(transparent,var(--muro) 22%);padding:22px 16px calc(14px + env(safe-area-inset-bottom))}
+.nav .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:1fr 2fr;gap:10px}
+.nav .btn{min-height:60px;white-space:nowrap;font-size:19px;padding:12px}
+
+/* fim */
+.fim h2{font-size:clamp(56px,16vw,90px);color:var(--amarelo);text-shadow:4px 4px 0 var(--laranja)}
+.card{background:var(--muro2);border:2px solid var(--linha);border-radius:var(--raio);padding:16px;margin:16px 0}
+.card h3{margin:0 0 8px;font-size:20px}
+.card ul{margin:8px 0 0;padding-left:20px}
+.card li{margin:4px 0}
+.status{font-size:15px;color:var(--suave);margin-top:10px}
+.entrevistador{background:#2a1220;border:2px solid var(--rosa);border-radius:14px;padding:12px;margin:12px 0;font-size:16px}
+.entrevistador input{width:100%;font:inherit;padding:10px;border-radius:10px;border:2px solid var(--linha);background:#0f0d0c;color:var(--tinta);margin-top:6px}
+.check{display:flex;gap:12px;align-items:flex-start;margin-top:12px;font-size:17px}
+.check input{width:28px;height:28px;flex:0 0 28px;accent-color:var(--amarelo)}
+footer{font-size:14px;color:var(--suave);margin-top:28px;border-top:1px solid var(--linha);padding-top:12px}
+footer b{color:var(--tinta)}
+footer ul{margin:6px 0 12px;padding-left:20px}
+footer li{margin:3px 0}
+footer .credito{margin:0;font-size:13px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topo">
+    <span class="tag">Comitê pela Democracia · Centreville</span>
+    <span id="selo-modo" class="modo hidden">Entrevista</span>
+  </div>
+
+  <!-- CAPA -->
+  <section id="capa" class="capa">
+    <figure class="foto foto-hist">
+      <img src="img/ocupacao-1982.jpg" alt="Foto antiga em preto e branco: moradores caminhando juntos pela rua do Centreville, na época da ocupação" width="472" height="288">
+      <figcaption>Os primeiros moradores, na época da ocupação. Foto: página “Centreville é nosso”.</figcaption>
+    </figure>
+    <h1>Fala,<br><span>Centre&shy;ville!</span></h1>
+    <div class="faixa">Desde 16 de julho de 1982, na luta</div>
+    <p class="lead">Este bairro nasceu de gente que não esperou ninguém fazer por ela. Agora a gente quer te ouvir.</p>
+    <p>São poucas perguntas, uns 3 minutos. Você pode tocar nas respostas ou <b>falar</b> no microfone. Dá para ouvir cada pergunta em voz alta.</p>
+
+    <div class="selos">
+      <div class="selo"><span class="ic" aria-hidden="true">🙈</span><div><b>Não pedimos nome, telefone nem endereço.</b>Nem em quem você votou.</div></div>
+      <div class="selo"><span class="ic" aria-hidden="true">🎤</span><div><b>Pode falar em vez de escrever.</b>A fala vira texto na hora. Não guardamos o áudio.</div></div>
+      <div class="selo"><span class="ic" aria-hidden="true">✋</span><div><b>Responde só o que quiser.</b>Toda pergunta pode ser pulada.</div></div>
+    </div>
+
+    <div id="painel-entrevista" class="entrevistador hidden">
+      <b>Modo entrevista</b>
+      <label>Seu apelido (de quem está entrevistando)
+        <input id="apelido" autocomplete="off" maxlength="30" placeholder="ex.: Lu da rua 3">
+      </label>
+      <div class="status" id="contagem"></div>
+    </div>
+
+    <button class="btn btn-p" id="comecar">Começar ▶</button>
+
+    <p class="quem">Quem faz: o Comitê pela Democracia do Centreville, grupo de moradores que também faz atividades políticas. Isto é uma escuta voluntária para entender o bairro e planejar ações. Não é pesquisa eleitoral.</p>
+  </section>
+
+  <!-- PERGUNTA -->
+  <section id="tela-pergunta" class="pergunta hidden" aria-live="polite">
+    <div class="progresso" aria-hidden="true"><i id="barra"></i></div>
+    <div class="passo-n" id="passo-n"></div>
+    <h2 id="p-titulo"></h2>
+    <p class="dica" id="p-dica"></p>
+    <button class="ouvir" id="btn-ouvir" type="button">🔊 Ouvir a pergunta</button>
+    <div class="opcoes" id="p-opcoes"></div>
+    <div class="fala hidden" id="p-fala">
+      <label for="p-texto" id="p-fala-rotulo">Quer contar mais? Aperte e fale.</label>
+      <button class="mic" id="btn-mic" type="button"><span class="bola" aria-hidden="true"></span><span id="mic-txt">Apertar e falar</span></button>
+      <textarea id="p-texto" maxlength="1500" placeholder="Ou escreva aqui. Não coloque nomes nem telefone."></textarea>
+      <p class="aviso-voz" id="aviso-voz"></p>
+    </div>
+  </section>
+
+  <!-- FIM -->
+  <section id="fim" class="fim hidden">
+    <figure class="foto">
+      <img src="img/mural.jpg" alt="Mural de grafite colorido com a palavra Centre-Ville e moradores pintados" width="414" height="172">
+      <figcaption>Mural do Centreville. Foto: página “Centreville é nosso”.</figcaption>
+    </figure>
+    <h2>Valeu!</h2>
+    <p style="font-size:21px">Sua voz entrou. Vamos juntar tudo e devolver para o bairro o que a gente ouviu.</p>
+
+    <div class="card">
+      <h3>🗳️ 2º turno: domingo, 25 de outubro</h3>
+      <p style="margin:0">Confira seu local de votação antes do dia. Pode ter mudado.</p>
+      <ul>
+        <li><a href="https://www.tse.jus.br/servicos-eleitorais/autoatendimento-eleitoral#/atendimento-eleitor/onde-votar" target="_blank" rel="noopener">Onde votar, no site do TSE</a></li>
+        <li>Aplicativo <b>e-Título</b> (Android e iPhone), opção “Onde votar”</li>
+        <li>Leve documento oficial com foto</li>
+      </ul>
+    </div>
+
+    <div class="card" id="card-grupo">
+      <h3>Quer somar com o comitê?</h3>
+      <p style="margin:0 0 12px">Aqui você não deixou contato. Se quiser participar das atividades, entre no grupo.</p>
+      <a class="btn btn-v" id="link-grupo" href="#" target="_blank" rel="noopener">Entrar no grupo do WhatsApp</a>
+    </div>
+
+    <div id="fim-entrevista" class="hidden">
+      <button class="btn btn-p" id="proxima">Próxima pessoa ▶</button>
+      <div class="status" id="contagem-fim"></div>
+    </div>
+    <div class="status" id="envio"></div>
+  </section>
+
+  <footer>
+    <b>Nossos compromissos</b>
+    <ul>
+      <li>Não pedimos nome, telefone, endereço nem voto.</li>
+      <li>Não recebemos nem guardamos áudio. Quem transforma a fala em texto é o serviço de voz do próprio celular (Google ou Apple).</li>
+      <li>As respostas ficam com o comitê e só são divulgadas somadas, sem nada que identifique alguém.</li>
+      <li>Não repassamos respostas nem contatos a partidos, candidatos ou campanhas.</li>
+      <li>Depois do 2º turno, vamos contar ao bairro o que ouvimos.</li>
+    </ul>
+    <p class="credito">Feito por Peterson Moreira, morador do Centreville, para o Comitê pela Democracia do Centreville. Ele é o responsável pela guarda das respostas.</p>
+  </footer>
+</div>
+
+<nav class="nav hidden" id="nav">
+  <div class="in">
+    <button class="btn btn-s" id="voltar">◀ Voltar</button>
+    <button class="btn btn-p" id="seguir">Seguir ▶</button>
+  </div>
+</nav>
+
+<script>
+/* ===== CONFIGURAÇÃO: preencher depois de publicar o Apps Script ===== */
+const CONFIG = {
+  ENDPOINT: "",            // URL do Apps Script (termina em /exec)
+  LINK_GRUPO: "",          // link de convite do grupo de WhatsApp (opcional)
+  VERSAO: "2026-10-09"
+};
+
+/* ===== PERGUNTAS ===== */
+const PERGUNTAS = [
+  { id:"relacao", tipo:"uma", titulo:"Qual é a sua ligação com o Centreville?",
+    opcoes:["Moro aqui","Trabalho aqui","Tenho família aqui","Outra"] },
+
+  { id:"idade", tipo:"uma", titulo:"Qual a sua idade?", dica:"Só a faixa. Serve para a gente saber se está ouvindo jovens e mais velhos.",
+    opcoes:["16 a 24","25 a 34","35 a 59","60 ou mais","Prefiro não dizer"] },
+
+  { id:"votou", tipo:"uma", titulo:"No 1º turno, dia 4 de outubro, você conseguiu votar?",
+    dica:"Não vamos perguntar em quem.",
+    opcoes:["Sim, votei","Não votei","Justifiquei","Não tenho título ou não preciso votar","Prefiro não dizer"] },
+
+  { id:"motivos", tipo:"varias", max:3, titulo:"O que atrapalhou?", dica:"Pode marcar até 3.",
+    se:r => r.votou==="Não votei" || r.votou==="Justifiquei",
+    opcoes:["Distância ou falta de condução","Não sabia onde votar","Estava trabalhando","Saúde, idade ou dificuldade de andar","Problema com título ou documento","Cuidando de criança ou familiar","Desânimo, não acredito mais","Estava fora da cidade","Outro motivo"],
+    fala:"Quer contar o que aconteceu? Aperte e fale." },
+
+  { id:"dia_a_dia", tipo:"varias", max:3, titulo:"O que mais pesa hoje na sua casa?", dica:"Pode marcar até 3.",
+    opcoes:["Preço da comida e das contas","Trabalho e renda","Saúde e fila no posto","Segurança e violência","Ônibus e transporte","Moradia e escritura","Escola e creche","Futuro dos jovens","Lazer, cultura e esporte","Outro"] },
+
+  { id:"medos", tipo:"varias", max:3, titulo:"Olhando para o país, o que você tem medo de perder ou ver piorar?", dica:"Pode marcar até 3.",
+    opcoes:["SUS, remédio de graça, Farmácia Popular","Bolsa Família e outros benefícios","Aposentadoria e direitos de quem trabalha","Faculdade, cotas e ProUni","Liberdade de falar e se manifestar","Respeito a negros, mulheres e LGBT","Emprego","Segurança","Nada me preocupa","Outro"],
+    fala:"Do que você tem medo? Pode falar com suas palavras." },
+
+  { id:"mudanca", tipo:"texto", titulo:"Se você pudesse mudar uma coisa na sua vida ou no bairro, o que seria?",
+    dica:"Fale com calma. Não precisa ser bonito, precisa ser verdade.",
+    fala:"Aperte e fale. Quando terminar, aperte de novo." },
+
+  { id:"confia", tipo:"varias", max:2, titulo:"Em quem você mais confia para saber das coisas?", dica:"Pode marcar até 2.",
+    opcoes:["Família e vizinhos","Igreja","Grupos de WhatsApp","TV","YouTube, TikTok ou Instagram","Rádio","Associação de moradores","Não confio em ninguém"] },
+
+  { id:"memoria", tipo:"texto", titulo:"Tem alguma história do Centreville que merece ser lembrada?",
+    dica:"A ocupação, uma festa, uma luta, uma pessoa. Sem nome completo de ninguém.",
+    fala:"Conta pra gente. Aperte e fale." }
+];
+
+/* ===== ESTADO ===== */
+const qs = new URLSearchParams(location.search);
+const MODO_ENTREVISTA = qs.get("modo")==="entrevista";
+// de onde a pessoa veio: ?origem=cartaz, ?origem=zap etc.
+const ORIGEM = (qs.get("origem")||"").replace(/[^a-z0-9_-]/gi,"").slice(0,20) || (MODO_ENTREVISTA ? "entrevista" : "link");
+const $ = id => document.getElementById(id);
+let respostas = {}, pilha = [], atual = -1;
+
+function seguro(fn, padrao){ try{ return fn(); }catch(e){ return padrao; } }
+const guardar = (k,v) => seguro(()=>localStorage.setItem(k, JSON.stringify(v)));
+const ler = (k,p) => seguro(()=>{ const v=localStorage.getItem(k); return v?JSON.parse(v):p; }, p);
+
+/* ===== NAVEGAÇÃO ===== */
+function visiveis(){ return PERGUNTAS.filter(p => !p.se || p.se(respostas)); }
+
+function mostrar(id){
+  ["capa","tela-pergunta","fim"].forEach(s => $(s).classList.toggle("hidden", s!==id));
+  $("nav").classList.toggle("hidden", id!=="tela-pergunta");
+  window.scrollTo(0,0);
+}
+
+function proximoIndice(de){
+  for(let i=de+1;i<PERGUNTAS.length;i++){ const p=PERGUNTAS[i]; if(!p.se || p.se(respostas)) return i; }
+  return -1;
+}
+
+function irPara(i){
+  pararVoz(); pararFala();
+  if(i<0){ concluir(); return; }
+  atual=i; render(PERGUNTAS[i]); mostrar("tela-pergunta");
+}
+
+function render(p){
+  const lista = visiveis(), pos = lista.indexOf(p)+1;
+  $("passo-n").textContent = `Pergunta ${pos} de ${lista.length}`;
+  $("barra").style.width = (100*(pos-1)/lista.length)+"%";
+  $("p-titulo").textContent = p.titulo;
+  $("p-dica").textContent = p.dica || (p.tipo==="texto" ? "" : "Toque na resposta.");
+  const box = $("p-opcoes"); box.innerHTML="";
+  (p.opcoes||[]).forEach(txt=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="op"+(p.tipo==="varias"?" multi":"");
+    b.innerHTML=`<span class="marca" aria-hidden="true"></span><span></span>`;
+    b.lastChild.textContent=txt;
+    const sel = p.tipo==="varias" ? (respostas[p.id]||[]).includes(txt) : respostas[p.id]===txt;
+    b.setAttribute("aria-pressed", sel?"true":"false");
+    b.onclick=()=>escolher(p,txt,b);
+    box.appendChild(b);
+  });
+  const temFala = !!p.fala;
+  $("p-fala").classList.toggle("hidden", !temFala);
+  if(temFala){
+    $("p-fala-rotulo").textContent = p.fala;
+    $("p-texto").value = respostas[p.id+"_texto"] || "";
+  }
+  atualizarSeguir();
+}
+
+function escolher(p,txt,b){
+  if(p.tipo==="uma"){
+    respostas[p.id] = respostas[p.id]===txt ? undefined : txt;
+    [...$("p-opcoes").children].forEach(x=>x.setAttribute("aria-pressed", x===b && respostas[p.id] ? "true":"false"));
+    if(respostas[p.id] && !p.fala) setTimeout(()=>avancar(), 260);
+  } else {
+    let arr = respostas[p.id] || [];
+    if(arr.includes(txt)) arr = arr.filter(x=>x!==txt);
+    else {
+      if(txt==="Nada me preocupa" || txt==="Não confio em ninguém") arr=[];
+      else arr = arr.filter(x=>x!=="Nada me preocupa" && x!=="Não confio em ninguém");
+      if(arr.length >= p.max) arr.shift();
+      arr.push(txt);
+    }
+    respostas[p.id]=arr;
+    [...$("p-opcoes").children].forEach(x=>x.setAttribute("aria-pressed", arr.includes(x.lastChild.textContent)?"true":"false"));
+  }
+  atualizarSeguir();
+}
+
+function salvarTexto(){
+  const p=PERGUNTAS[atual]; if(!p || !p.fala) return;
+  const v=$("p-texto").value.trim();
+  respostas[p.id+"_texto"] = v || undefined;
+}
+
+function atualizarSeguir(){
+  const p=PERGUNTAS[atual];
+  const tem = p && (p.tipo==="varias" ? (respostas[p.id]||[]).length>0 : p.tipo==="uma" ? !!respostas[p.id] : !!$("p-texto").value.trim());
+  $("seguir").textContent = proximoIndice(atual)<0 ? (tem?"Enviar ✔":"Pular e enviar") : (tem?"Seguir ▶":"Pular ▶");
+}
+
+function avancar(){ salvarTexto(); pilha.push(atual); irPara(proximoIndice(atual)); }
+
+$("seguir").onclick = avancar;
+$("voltar").onclick = ()=>{ salvarTexto(); pararVoz(); pararFala();
+  if(!pilha.length){ mostrar("capa"); return; }
+  irPara(pilha.pop()); };
+$("p-texto").addEventListener("input", atualizarSeguir);
+
+$("comecar").onclick = ()=>{
+  if(MODO_ENTREVISTA){ guardar("cv_apelido", $("apelido").value.trim()); }
+  respostas={}; pilha=[]; irPara(0);
+};
+
+/* ===== OUVIR A PERGUNTA (texto para voz) ===== */
+const temTTS = "speechSynthesis" in window;
+function vozPt(){
+  const vs = speechSynthesis.getVoices();
+  return vs.find(v=>/pt[-_]BR/i.test(v.lang)) || vs.find(v=>/^pt/i.test(v.lang)) || null;
+}
+function pararVoz(){ if(temTTS) speechSynthesis.cancel(); $("btn-ouvir").classList.remove("ativo"); }
+$("btn-ouvir").onclick = ()=>{
+  if(!temTTS) return;
+  if(speechSynthesis.speaking){ pararVoz(); return; }
+  const p=PERGUNTAS[atual];
+  let t = p.titulo + ". " + (p.dica||"");
+  if(p.opcoes) t += " As opções são: " + p.opcoes.join(". ") + ".";
+  const u = new SpeechSynthesisUtterance(t);
+  u.lang="pt-BR"; u.rate=.92; const v=vozPt(); if(v) u.voice=v;
+  u.onend = u.onerror = ()=>$("btn-ouvir").classList.remove("ativo");
+  $("btn-ouvir").classList.add("ativo");
+  speechSynthesis.speak(u);
+};
+if(!temTTS) $("btn-ouvir").classList.add("hidden");
+
+/* ===== FALAR (voz para texto) ===== */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec=null, gravando=false, baseTexto="";
+function pararFala(){ if(rec && gravando){ gravando=false; try{rec.stop();}catch(e){} } marcarMic(false); }
+function marcarMic(on){ $("btn-mic").classList.toggle("gravando",on); $("mic-txt").textContent = on ? "Ouvindo… aperte para parar" : "Apertar e falar"; }
+
+if(!SR){
+  $("btn-mic").classList.add("hidden");
+  $("aviso-voz").textContent = "Para falar: toque na caixa acima e use o microfone 🎤 do teclado do celular. Se abriu pelo WhatsApp, abrir no Chrome ou Safari libera o botão de fala.";
+} else {
+  $("aviso-voz").textContent = "Se o botão não funcionar, toque na caixa e use o microfone 🎤 do teclado.";
+  $("btn-mic").onclick = ()=>{
+    if(gravando){ pararFala(); return; }
+    pararVoz();
+    rec = new SR(); rec.lang="pt-BR"; rec.interimResults=true; rec.continuous=true;
+    baseTexto = $("p-texto").value ? $("p-texto").value.trim()+" " : "";
+    let finais="";
+    rec.onresult = ev=>{
+      let prov="";
+      for(let i=ev.resultIndex;i<ev.results.length;i++){
+        const r=ev.results[i];
+        if(r.isFinal) finais += r[0].transcript.trim()+" "; else prov += r[0].transcript;
+      }
+      $("p-texto").value = (baseTexto + finais + prov).trimStart();
+      atualizarSeguir();
+    };
+    rec.onerror = ev=>{
+      if(ev.error==="not-allowed"||ev.error==="service-not-allowed")
+        $("aviso-voz").textContent="O celular não deixou usar o microfone. Libere o microfone para este site, ou use o 🎤 do teclado.";
+      else if(ev.error==="no-speech") $("aviso-voz").textContent="Não ouvi nada. Aperte e tente de novo, mais perto do celular.";
+    };
+    rec.onend = ()=>{ if(gravando){ try{ baseTexto=$("p-texto").value.trim()+" "; finais=""; rec.start(); }catch(e){ pararFala(); } } else marcarMic(false); };
+    try{ rec.start(); gravando=true; marcarMic(true); }catch(e){ pararFala(); }
+  };
+}
+
+/* ===== ENVIO (com fila para quando faltar internet) ===== */
+function novoId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+function montarRegistro(){
+  const r = { id:novoId(), quando:new Date().toISOString(), versao:CONFIG.VERSAO,
+    modo: MODO_ENTREVISTA ? "entrevista" : "autopreenchimento",
+    entrevistador: MODO_ENTREVISTA ? (ler("cv_apelido","")||"") : "" };
+  PERGUNTAS.forEach(p=>{
+    const v=respostas[p.id]; r[p.id] = Array.isArray(v) ? v.join(" | ") : (v||"");
+    if(p.fala) r[p.id+"_texto"] = respostas[p.id+"_texto"] || "";
+  });
+  if(r.mudanca==="" && respostas["mudanca_texto"]) r.mudanca = respostas["mudanca_texto"];
+  if(r.memoria==="" && respostas["memoria_texto"]) r.memoria = respostas["memoria_texto"];
+  delete r.mudanca_texto; delete r.memoria_texto;
+  r.origem = ORIGEM;
+  return r;
+}
+
+async function enviarUm(reg){
+  if(!CONFIG.ENDPOINT) throw new Error("sem endpoint");
+  await fetch(CONFIG.ENDPOINT, { method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(reg) });
+}
+
+async function esvaziarFila(){
+  let fila = ler("cv_fila", []);
+  if(!fila.length || !CONFIG.ENDPOINT || !navigator.onLine) return fila.length;
+  const resto=[];
+  for(const reg of fila){ try{ await enviarUm(reg); }catch(e){ resto.push(reg); } }
+  guardar("cv_fila", resto);
+  return resto.length;
+}
+
+async function concluir(){
+  pararVoz(); pararFala();
+  const reg = montarRegistro();
+  const fila = ler("cv_fila", []); fila.push(reg); guardar("cv_fila", fila);
+  const total = ler("cv_total", 0)+1; guardar("cv_total", total);
+  mostrar("fim");
+  $("envio").textContent = "Enviando…";
+  const pendentes = await esvaziarFila();
+  $("envio").textContent = pendentes===0 ? "Resposta enviada. ✔"
+    : CONFIG.ENDPOINT ? `Sem internet agora: ${pendentes} resposta(s) guardada(s) neste celular. Serão enviadas sozinhas quando a internet voltar.`
+    : `Resposta guardada neste celular (${pendentes} no total). O envio ainda não foi configurado.`;
+  atualizarContagem();
+}
+
+function atualizarContagem(){
+  const t = ler("cv_total",0), f = ler("cv_fila",[]).length;
+  const txt = `Entrevistas feitas neste celular: ${t}. Esperando envio: ${f}.`;
+  $("contagem").textContent = txt; $("contagem-fim").textContent = txt;
+}
+
+$("proxima").onclick = ()=>{ respostas={}; pilha=[]; irPara(0); };
+window.addEventListener("online", ()=>esvaziarFila().then(atualizarContagem));
+
+/* ===== INÍCIO ===== */
+if(CONFIG.LINK_GRUPO) $("link-grupo").href = CONFIG.LINK_GRUPO; else $("card-grupo").classList.add("hidden");
+if(MODO_ENTREVISTA){
+  $("selo-modo").classList.remove("hidden");
+  $("painel-entrevista").classList.remove("hidden");
+  $("fim-entrevista").classList.remove("hidden");
+  $("apelido").value = ler("cv_apelido","");
+  $("comecar").textContent = "Começar entrevista ▶";
+  atualizarContagem();
+}
+esvaziarFila().then(atualizarContagem);
+</script>
+</body>
+</html>
