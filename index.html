@@ -407,13 +407,24 @@ function salvarTexto(){
   respostas[p.id+"_texto"] = v || undefined;
 }
 
+// a pessoa respondeu pelo menos alguma coisa? (resposta toda pulada não é enviada)
+function algumaResposta(){
+  return PERGUNTAS.some(p=>{ const v=respostas[p.id]; return (Array.isArray(v) ? v.length>0 : !!v) || !!respostas[p.id+"_texto"]; })
+    || !!$("p-texto").value.trim();
+}
+
 function atualizarSeguir(){
   const p=PERGUNTAS[atual];
+  if(proximoIndice(atual)<0 && !algumaResposta()){ $("seguir").textContent = "Voltar ao início"; return; }
   const tem = p && (p.tipo==="varias" ? (respostas[p.id]||[]).length>0 : p.tipo==="uma" ? !!respostas[p.id] : !!$("p-texto").value.trim());
   $("seguir").textContent = proximoIndice(atual)<0 ? (tem?"Enviar ✔":"Pular e enviar") : (tem?"Seguir ▶":"Pular ▶");
 }
 
-function avancar(){ salvarTexto(); pilha.push(atual); irPara(proximoIndice(atual)); }
+function avancar(){
+  salvarTexto();
+  if(proximoIndice(atual)<0 && !algumaResposta()){ pararVoz(); pararFala(); respostas={}; pilha=[]; mostrar("capa"); return; }
+  pilha.push(atual); irPara(proximoIndice(atual));
+}
 
 $("seguir").onclick = avancar;
 $("voltar").onclick = ()=>{ salvarTexto(); pararVoz(); pararFala();
