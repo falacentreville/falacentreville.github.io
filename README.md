@@ -12,7 +12,7 @@ Escuta anônima do Comitê pela Democracia do Centreville (Santo André, SP).
 
 ## Onde ficam as respostas
 
-Numa planilha Google do responsável pela guarda, recebidas por um Apps Script (o código fica fora deste repositório). Nada de resposta fica no GitHub.
+Numa planilha Google do comitê, recebidas por um Apps Script (o código fica fora deste repositório). Nada de resposta fica no GitHub.
 
 ## Compromissos
 
@@ -20,5 +20,5 @@ Não coletamos nome, telefone, endereço nem voto. Não recebemos áudio. As res
 
 ## Créditos
 
-Desenvolvimento e guarda das respostas: Peterson Moreira, morador do Centreville.
+Desenvolvimento: Peterson Moreira, morador do Centreville.
 Fotos: página "Centreville é nosso" (Facebook).

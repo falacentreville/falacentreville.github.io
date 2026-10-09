@@ -75,7 +75,7 @@ button{font:inherit;cursor:pointer}
 
 <script>
 /* mesma URL do Apps Script usada no index.html */
-const ENDPOINT = "";
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbxWutlNNs9DBleWporYzgdAvXfSzCzRM2ow4xdyfvMPuPintMMF_gqKim_zjQnr7bQ/exec";
 
 const CONTAGENS = [
   { id:"votou", titulo:"Conseguiu votar no 1º turno?" },
@@ -181,7 +181,7 @@ async function carregar(chave){
     const r = await fetch(ENDPOINT, { method:"POST", body: JSON.stringify({ acao:"painel", chave }) });
     const j = await r.json();
     if(j.erro){ $("msg").textContent = j.erro; return; }
-    linhas = j.linhas || [];
+    linhas = (j.linhas || []).filter(l => l.origem !== "teste");
     $("msg").textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}) + ".";
     $("entrar").hidden = true; $("resultado").hidden = false;
     desenhar();
