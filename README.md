@@ -20,5 +20,5 @@ Não coletamos nome, telefone, endereço nem voto. Não recebemos áudio. As res
 
 ## Créditos
 
-Desenvolvimento: Peterson Moreira, morador do Centreville.
+Desenvolvimento: Peterson Moreira, engenheiro e morador do Centreville.
 Fotos: página "Centreville é nosso" (Facebook).
