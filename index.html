@@ -66,6 +66,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .selo{display:flex;gap:12px;align-items:flex-start;background:var(--muro2);border:2px solid var(--linha);border-radius:14px;padding:12px 14px;font-size:17px}
 .selo b{display:block}
 .selo .ic{font-size:26px;line-height:1}
+.contador{display:inline-flex;align-items:center;gap:6px;background:var(--muro2);border:2px solid var(--amarelo);border-radius:99px;padding:6px 14px;font-size:18px;margin:0 0 14px}
+.contador b{color:var(--amarelo);font-size:22px}
+.pausa{background:#3a0d1c;border:3px solid var(--rosa);border-radius:16px;padding:14px;margin:0 0 16px;font-size:19px}
+.dica.limite{color:var(--amarelo);font-weight:700}
 .quem{font-size:15px;color:var(--suave);border-left:4px solid var(--amarelo);padding:4px 0 4px 12px;margin:18px 0}
 
 /* botões */
@@ -149,6 +153,7 @@ footer .credito{margin:0;font-size:13px}
     </figure>
     <h1>Fala, <span class="mega" aria-hidden="true"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" focusable="false"><path d="M20 41 L21 53 L28 53 L28 44" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="4" y="25" width="9" height="14" rx="2" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M12 25 L37 13 L37 51 L12 39 Z" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="36" y="10" width="7" height="44" rx="3.5" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M49 24 Q54 32 49 40" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M55 18 Q63 32 55 46" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg></span><br><span id="titulo-bairro">Centre Ville!</span></h1>
     <div class="faixa" id="faixa">Desde 16 de julho de 1982, na luta</div>
+    <p class="contador hidden" id="contador" aria-live="polite"></p>
     <p class="lead" id="lead">Este bairro nasceu de gente que não esperou ninguém fazer por ela. Agora a gente quer te ouvir.</p>
     <p>São poucas perguntas, uns 4 minutos. Você pode tocar nas respostas ou <b>falar</b> no microfone. Dá para ouvir cada pergunta em voz alta.</p>
 
@@ -166,6 +171,7 @@ footer .credito{margin:0;font-size:13px}
       <div class="status" id="contagem"></div>
     </div>
 
+    <div class="pausa hidden" id="pausa"><b>Hoje é dia de eleição.</b> A escuta está em pausa e volta amanhã.</div>
     <button class="btn btn-p" id="comecar">Começar ▶</button>
 
     <p class="quem" id="quem">Quem faz: o Comitê pela Democracia do Centre Ville, grupo de moradores que também faz atividades políticas. Isto é uma escuta voluntária para entender o bairro e planejar ações. Não é pesquisa eleitoral.</p>
@@ -195,6 +201,7 @@ footer .credito{margin:0;font-size:13px}
     </figure>
     <h2>Valeu!</h2>
     <p style="font-size:21px">Sua voz entrou. Vamos juntar tudo e devolver para o bairro o que a gente ouviu.</p>
+    <p class="contador hidden" id="contador-fim" aria-live="polite"></p>
 
     <div class="card">
       <h3>🗳️ 2º turno: domingo, 25 de outubro</h3>
@@ -245,7 +252,9 @@ footer .credito{margin:0;font-size:13px}
 const CONFIG = {
   ENDPOINT: "https://script.google.com/macros/s/AKfycbxWutlNNs9DBleWporYzgdAvXfSzCzRM2ow4xdyfvMPuPintMMF_gqKim_zjQnr7bQ/exec",
   LINK_GRUPO: "",          // link de convite do grupo de WhatsApp (opcional)
-  VERSAO: "2026-10-09-v3"
+  VERSAO: "2026-10-09-v3",
+  CONTADOR_MINIMO: 20,          // o contador da capa só aparece a partir deste número de respostas
+  DIAS_DE_PAUSA: ["2026-10-25"] // regra do comitê: escuta parada no dia da eleição
 };
 
 /* ===== BAIRRO (vem do link: ?bairro=ID; sem parâmetro é o Centre Ville) ===== */
@@ -309,8 +318,16 @@ const $ = id => document.getElementById(id);
 let respostas = {}, pilha = [], atual = -1;
 
 function seguro(fn, padrao){ try{ return fn(); }catch(e){ return padrao; } }
-const guardar = (k,v) => seguro(()=>localStorage.setItem(k, JSON.stringify(v)));
-const ler = (k,p) => seguro(()=>{ const v=localStorage.getItem(k); return v?JSON.parse(v):p; }, p);
+// se o celular não deixar guardar (aba anônima, memória cheia), guarda na memória da página
+const memoria = {};
+function guardar(k, v){
+  try{ localStorage.setItem(k, JSON.stringify(v)); delete memoria[k]; }
+  catch(e){ memoria[k] = JSON.parse(JSON.stringify(v)); }
+}
+function ler(k, p){
+  if(k in memoria) return memoria[k];
+  return seguro(()=>{ const v=localStorage.getItem(k); return v?JSON.parse(v):p; }, p);
+}
 
 /* ===== NAVEGAÇÃO ===== */
 function visiveis(){ return PERGUNTAS.filter(p => !p.se || p.se(respostas)); }
@@ -337,7 +354,7 @@ function render(p){
   $("passo-n").textContent = `Pergunta ${pos} de ${lista.length}`;
   $("barra").style.width = (100*(pos-1)/lista.length)+"%";
   $("p-titulo").textContent = p.titulo;
-  $("p-dica").textContent = p.dica || (p.tipo==="texto" ? "" : "Toque na resposta.");
+  mostrarDica(p);
   const box = $("p-opcoes"); box.innerHTML="";
   (p.opcoesDe ? p.opcoesDe(respostas) : (p.opcoes||[])).forEach(txt=>{
     const b=document.createElement("button");
@@ -358,6 +375,11 @@ function render(p){
   atualizarSeguir();
 }
 
+function mostrarDica(p, limite){
+  $("p-dica").textContent = limite ? `Você já marcou ${p.max}. Para trocar, desmarque uma.` : (p.dica || (p.tipo==="texto" ? "" : "Toque na resposta."));
+  $("p-dica").classList.toggle("limite", !!limite);
+}
+
 function escolher(p,txt,b){
   if(p.tipo==="uma"){
     respostas[p.id] = respostas[p.id]===txt ? undefined : txt;
@@ -369,10 +391,11 @@ function escolher(p,txt,b){
     else {
       if(txt==="Nada me preocupa" || txt==="Não confio em ninguém") arr=[];
       else arr = arr.filter(x=>x!=="Nada me preocupa" && x!=="Não confio em ninguém");
-      if(arr.length >= p.max) arr.shift();
+      if(arr.length >= p.max){ mostrarDica(p, true); return; }
       arr.push(txt);
     }
     respostas[p.id]=arr;
+    mostrarDica(p);
     [...$("p-opcoes").children].forEach(x=>x.setAttribute("aria-pressed", arr.includes(x.lastChild.textContent)?"true":"false"));
   }
   atualizarSeguir();
@@ -515,6 +538,7 @@ async function esvaziarFila(){
 
 function mostrarEnvio(pendentes){
   $("envio").textContent = pendentes===0 ? "Resposta enviada e confirmada. ✔"
+    : CONFIG.ENDPOINT && ("cv_fila" in memoria) ? `${pendentes} resposta(s) ainda não enviada(s). Não feche esta página: o envio tenta de novo sozinho.`
     : CONFIG.ENDPOINT ? `${pendentes} resposta(s) guardada(s) neste celular. O envio tenta de novo sozinho; se fechar a página, continua quando o site for aberto de novo.`
     : `Resposta guardada neste celular (${pendentes} no total). O envio ainda não foi configurado.`;
 }
@@ -540,6 +564,7 @@ async function concluir(){
   mostrarEnvio(pendentes);
   atualizarContagem();
   if(pendentes) tentarDeNovo();
+  else buscarTotal().then(t => mostrarContador("contador-fim", t));
 }
 
 function atualizarContagem(){
@@ -550,6 +575,23 @@ function atualizarContagem(){
 
 $("proxima").onclick = ()=>{ respostas={}; pilha=[]; irPara(0); };
 window.addEventListener("online", ()=>esvaziarFila().then(p=>{ atualizarContagem(); if(p) tentarDeNovo(); }));
+
+/* ===== CONTADOR ===== */
+async function buscarTotal(){
+  if(!CONFIG.ENDPOINT) return null;
+  try{
+    const r = await fetch(CONFIG.ENDPOINT + "?acao=contagem");
+    const j = await r.json();
+    return Number.isFinite(j.total) ? j.total : null;
+  }catch(e){ return null; }
+}
+function mostrarContador(id, total){
+  if(total === null || total < CONFIG.CONTADOR_MINIMO) return;
+  const el = $(id); el.textContent = "📣 Já são ";
+  const b = document.createElement("b"); b.textContent = total.toLocaleString("pt-BR");
+  el.appendChild(b); el.appendChild(document.createTextNode(` vozes ${BAIRRO.de}`));
+  el.classList.remove("hidden");
+}
 
 /* ===== TEXTOS DO BAIRRO ===== */
 function aplicarBairro(){
@@ -573,6 +615,12 @@ function aplicarBairro(){
 
 /* ===== INÍCIO ===== */
 aplicarBairro();
+const hojeSP = seguro(()=>new Intl.DateTimeFormat("en-CA", { timeZone:"America/Sao_Paulo" }).format(new Date()), "");
+if(CONFIG.DIAS_DE_PAUSA.includes(hojeSP)){
+  $("pausa").classList.remove("hidden");
+  $("comecar").classList.add("hidden");
+}
+buscarTotal().then(t => mostrarContador("contador", t));
 if(CONFIG.LINK_GRUPO) $("link-grupo").href = CONFIG.LINK_GRUPO; else $("card-grupo").classList.add("hidden");
 if(MODO_ENTREVISTA){
   $("selo-modo").classList.remove("hidden");

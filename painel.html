@@ -58,7 +58,7 @@ button{font:inherit;cursor:pointer}
     <label>Senha do painel
       <input type="password" id="chave" autocomplete="current-password" required>
     </label>
-    <label class="check"><input type="checkbox" id="lembrar"> Lembrar a senha neste aparelho (só no seu celular, nunca em aparelho emprestado)</label>
+    <label class="check"><input type="checkbox" id="lembrar"> Lembrar a senha só enquanto esta aba estiver aberta</label>
     <button class="btn btn-p" type="submit">Ver respostas</button>
   </form>
   <div id="msg"></div>
@@ -95,7 +95,7 @@ const CONTAGENS = [
     filtro:l => l.genero==="Mulher", base:"só mulheres" },
   { id:"medos", chave:"medos_homens", titulo:"Medos entre os homens", multi:true,
     filtro:l => l.genero==="Homem", base:"só homens" },
-  { id:"por_que_mudam", titulo:"Por que muita gente muda de voto", multi:true },
+  { id:"por_que_mudam", titulo:"Por que muita gente muda de voto (na opinião de quem respondeu)", multi:true },
   { id:"confia", titulo:"Em quem confia para se informar", multi:true },
   { id:"idade", titulo:"Faixa de idade" },
   { id:"genero", titulo:"Gênero" },
@@ -173,7 +173,7 @@ function desenhar(){
 
 function resumo(){
   const n = linhas.length, hoje = new Date().toLocaleDateString("pt-BR");
-  const prefixo = DEMO ? ["(EXEMPLO COM DADOS INVENTADOS)"] : [];
+  const prefixo = (DEMO ? ["(EXEMPLO COM DADOS INVENTADOS)"] : []).concat(["RESUMO INTERNO DO COMITÊ · não publicar como está"]);
   const bloco = chave => CONTAGENS.find(x => (x.chave || x.id) === chave);
   const top = (chave, k=3) => {
     const r = contar(bloco(chave));
@@ -190,8 +190,8 @@ function resumo(){
     `O que mais pesa em casa: ${top("dia_a_dia")}.`,
     `O que pesa mais (uma só): ${top("prioridade")}.`,
     `Medo de perder ou ver piorar: ${top("medos")}.`,
-    `Medos entre as mulheres: ${top("medos_mulheres")}.`,
-    `Por que muita gente muda de voto: ${top("por_que_mudam")}.`,
+    contar(bloco("medos_mulheres")).resp >= 10 ? `Medos entre as mulheres: ${top("medos_mulheres")}.` : "Medos entre as mulheres: ainda são poucas respostas.",
+    `Por que muita gente muda de voto, na opinião de quem respondeu: ${top("por_que_mudam")}.`,
     `Em quem confiam para se informar: ${top("confia", 2)}.`
   ].join("\n");
 }
@@ -232,8 +232,9 @@ async function carregar(chave){
 $("entrar").onsubmit = ev => {
   ev.preventDefault();
   const chave = $("chave").value;
-  if($("lembrar").checked) seguro(() => localStorage.setItem("cv_chave_painel", chave));
-  else seguro(() => localStorage.removeItem("cv_chave_painel"));
+  // a senha nunca fica gravada no aparelho: no máximo enquanto a aba estiver aberta
+  if($("lembrar").checked) seguro(() => sessionStorage.setItem("cv_chave_painel", chave));
+  else seguro(() => sessionStorage.removeItem("cv_chave_painel"));
   carregar(chave);
 };
 $("atualizar").onclick = () => DEMO ? aplicarFiltro() : carregar($("chave").value);
@@ -302,7 +303,8 @@ if(DEMO){
   $("msg").textContent = "Exemplo com 24 respostas inventadas.";
   prepararFiltro(); aplicarFiltro();
 } else {
-  const salva = seguro(() => localStorage.getItem("cv_chave_painel"), null);
+  seguro(() => localStorage.removeItem("cv_chave_painel"));   // apaga senha guardada por versões antigas
+  const salva = seguro(() => sessionStorage.getItem("cv_chave_painel"), null);
   if(salva){ $("chave").value = salva; $("lembrar").checked = true; carregar(salva); }
 }
 </script>

@@ -32,6 +32,8 @@ a{color:var(--amarelo)}
 .alerta li{margin:12px 0}
 .alerta b{color:#fff}
 .lei{display:block;font-size:14px;color:var(--suave);margin-top:2px}
+.ouro{background:var(--muro2);border:3px solid var(--amarelo);border-radius:18px;padding:14px 16px;margin:18px 0}
+.ouro h2{margin:0 0 6px;color:var(--amarelo)}
 .datas{display:grid;gap:8px;margin:10px 0}
 .data{display:grid;grid-template-columns:110px 1fr;gap:10px;background:var(--muro2);border-radius:12px;padding:10px 12px}
 .data b{color:var(--amarelo)}
@@ -52,9 +54,19 @@ a{color:var(--amarelo)}
   <h1>Guia de quem entrevista</h1>
   <p>A escuta é para <b>ouvir</b> o bairro. Não é campanha, não é pesquisa eleitoral. Leia até o fim: são 5 minutos.</p>
 
+  <div class="ouro">
+    <h2>As 4 regras de ouro</h2>
+    <ol>
+      <li><b>Não ofereça nada</b> em troca: nem carona, nem lanche, nem brinde, nem favor.</li>
+      <li><b>Nunca pergunte em quem a pessoa vota</b> ou votou.</li>
+      <li><b>Sem camiseta, boné ou adesivo</b> de candidato ou partido.</li>
+      <li><b>Domingo, 25 de outubro: pausa total</b> da escuta e do link.</li>
+    </ol>
+  </div>
+
   <h2>Os links</h2>
   <a class="link" href="https://falacentreville.github.io/?modo=entrevista">falacentreville.github.io/?modo=entrevista
-    <small>Para você entrevistar. Funciona sem internet e conta suas entrevistas.</small></a>
+    <small>Para você entrevistar. Abra com internet; se ela cair, a escuta continua e as respostas sobem depois. Conta suas entrevistas.</small></a>
   <a class="link" href="https://falacentreville.github.io/?origem=zap">falacentreville.github.io/?origem=zap
     <small>Para mandar no WhatsApp: a pessoa responde sozinha, no celular dela.</small></a>
 
@@ -63,14 +75,16 @@ a{color:var(--amarelo)}
     <li>Abra o link de entrevista no <b>Chrome</b> (Android) ou no <b>Safari</b> (iPhone). Se abrir pelo WhatsApp e o botão de falar não funcionar, toque nos três pontinhos e escolha abrir no navegador.</li>
     <li>Escreva o <b>seu apelido</b> (de quem entrevista). Ele serve só para contar as entrevistas de cada voluntário.</li>
     <li>Na primeira vez, o celular pede para usar o microfone: toque em <b>Permitir</b>.</li>
-    <li>Leve o celular carregado. Sem internet, as respostas ficam guardadas e sobem sozinhas depois. <b>Não use aba anônima e não limpe os dados do navegador</b> antes de tudo ser enviado.</li>
+    <li><b>Abra o link com internet antes de sair</b> e não feche a aba. Assim a escuta continua funcionando mesmo se a internet cair: as respostas ficam guardadas e sobem sozinhas quando ela voltar.</li>
+    <li>Sem internet, <b>o botão de falar não funciona</b> (a voz é transformada em texto pela internet). Toque nas respostas e digite as falas.</li>
+    <li>Use um celular <b>com senha de bloqueio</b>. Não use aba anônima e não limpe os dados do navegador. No fim do dia, confira se aparece <b>"Esperando envio: 0"</b>.</li>
     <li>Vá <b>sem camiseta, boné, adesivo ou santinho</b> de candidato ou partido. A escuta tem a cara do Centre Ville.</li>
   </ol>
 
   <h2>Como chegar na pessoa</h2>
   <div class="fala">"Oi, eu sou [seu nome ou apelido], moro aqui no Centre Ville. Sou do Comitê pela Democracia do Centre Ville, um grupo de moradores que também faz atividades políticas. A gente está ouvindo o bairro: são uns 4 minutos, não pedimos nome nem em quem você votou, e dá para pular qualquer pergunta. Posso te fazer umas perguntas?"</div>
   <ul>
-    <li>Só com pessoas de <b>16 anos ou mais</b>.</li>
+    <li>Só com pessoas de <b>16 anos ou mais</b>. Com quem tem 16 ou 17 anos, cuidado redobrado: nada nas falas que permita saber quem é.</li>
     <li>Se a pessoa disser não, agradeça e siga. Ninguém é obrigado.</li>
   </ul>
 
@@ -86,7 +100,7 @@ a{color:var(--amarelo)}
   <h2>Depois</h2>
   <ul>
     <li>Toque em <b>Próxima pessoa</b>. O contador mostra quantas entrevistas você fez e quantas esperam envio.</li>
-    <li>Se a pessoa quiser participar do comitê, ela entra no grupo pelo celular dela. Você não anota contato.</li>
+    <li>Se a pessoa quiser participar do comitê, convide para as atividades abertas. Você não anota o contato dela.</li>
     <li>Se depois da entrevista a pessoa quiser conversar sobre política, tudo bem, mas a escuta acaba antes. Não misture as duas coisas.</li>
   </ul>
 
@@ -95,13 +109,13 @@ a{color:var(--amarelo)}
     <ul>
       <li><b>Nunca ofereça nem prometa nada</b> em troca de voto ou de a pessoa não votar: dinheiro, cesta, remédio, favor, emprego, nada. É crime mesmo que a pessoa recuse.
         <span class="lei">Código Eleitoral, art. 299: reclusão de até 4 anos.</span></li>
-      <li><b>Não dê carona, transporte nem comida a eleitor</b> por causa da eleição. De sábado 24 a segunda 26 de outubro, transportar eleitores é proibido (só vale levar a própria família, no próprio carro). Quem tem dificuldade para votar: ajude a achar o local no site do TSE ou no e-Título.
+      <li><b>Não dê carona, transporte nem comida a eleitor</b> por causa da eleição. Do dia 24 ao dia 26 de outubro, a lei proíbe transportar eleitores, com poucas exceções: ônibus de linha, táxi ou aplicativo no serviço normal, sem finalidade eleitoral, e cada pessoa no próprio carro com a própria família. <b>Regra do comitê: nenhum transporte de eleitor.</b> Quem tem dificuldade para votar: ajude a achar o local no site do TSE ou no e-Título.
         <span class="lei">Lei 6.091/1974, arts. 5º, 10 e 11: reclusão de 4 a 6 anos.</span></li>
       <li><b>Não distribua brindes</b>, camisetas, bonés, lanches ou qualquer coisa junto com a escuta.
         <span class="lei">Lei 9.504/1997, art. 39, § 6º.</span></li>
       <li><b>Nunca pergunte em quem a pessoa vota ou votou</b> e não chame a escuta de "pesquisa eleitoral". Enquetes sobre a eleição são proibidas durante a campanha.
         <span class="lei">Lei 9.504/1997, art. 33, § 5º.</span></li>
-      <li><b>Domingo, 25 de outubro: pausa total.</b> Nenhuma escuta, nenhuma abordagem, nada de mandar o link. No dia da eleição, abordar eleitores, fazer boca de urna, usar som e publicar conteúdo novo de campanha são crime.
+      <li><b>Domingo, 25 de outubro.</b> Na lei, no dia da eleição são crime: boca de urna, arregimentar eleitores, usar alto-falante, fazer comício ou carreata e divulgar propaganda de partido ou candidato. A escuta em si não é propaganda, mas, por cautela, <b>a regra do comitê é pausa total</b>: nenhuma entrevista e nada de mandar o link. O site também fica em pausa nesse dia.
         <span class="lei">Lei 9.504/1997, art. 39, § 5º: detenção de 6 meses a 1 ano.</span></li>
       <li><b>Megafone ou caixa de som:</b> só das 8h às 22h, e nunca a menos de 200 metros de escolas, igrejas, hospitais e prédios públicos em funcionamento. No dia 25, proibido.
         <span class="lei">Lei 9.504/1997, art. 39, §§ 3º e 5º.</span></li>
@@ -113,7 +127,7 @@ a{color:var(--amarelo)}
   <h2>Calendário</h2>
   <div class="datas">
     <div class="data"><b>Até sáb 24/10</b><span>Escuta nas ruas, de dia (no máximo até as 22h).</span></div>
-    <div class="data nao"><b>Dom 25/10</b><span>Dia da eleição: pausa total da escuta e do link.</span></div>
+    <div class="data nao"><b>Dom 25/10</b><span>Dia da eleição: pausa total da escuta e do link (regra do comitê).</span></div>
     <div class="data"><b>Depois do 25</b><span>Devolutiva: contar ao bairro o que ouvimos.</span></div>
   </div>
 
