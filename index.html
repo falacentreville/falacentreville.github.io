@@ -199,8 +199,8 @@ footer .credito{margin:0;font-size:13px}
       <img id="foto-fim-img" src="img/mural.jpg" alt="Mural de grafite colorido com a palavra Centre-Ville e moradores pintados" width="414" height="172">
       <figcaption id="foto-fim-legenda">Mural do Centre Ville. Foto: página “Centreville é nosso”.</figcaption>
     </figure>
-    <h2>Valeu!</h2>
-    <p style="font-size:21px">Sua voz entrou. Vamos juntar tudo e devolver para o bairro o que a gente ouviu.</p>
+    <h2 id="fim-titulo">Valeu!</h2>
+    <p style="font-size:21px" id="fim-texto">Sua voz entrou. Vamos juntar tudo e devolver para o bairro o que a gente ouviu.</p>
     <p class="contador hidden" id="contador-fim" aria-live="polite"></p>
 
     <div class="card">
@@ -415,16 +415,12 @@ function algumaResposta(){
 
 function atualizarSeguir(){
   const p=PERGUNTAS[atual];
-  if(proximoIndice(atual)<0 && !algumaResposta()){ $("seguir").textContent = "Voltar ao início"; return; }
+  if(proximoIndice(atual)<0 && !algumaResposta()){ $("seguir").textContent = "Encerrar ✔"; return; }
   const tem = p && (p.tipo==="varias" ? (respostas[p.id]||[]).length>0 : p.tipo==="uma" ? !!respostas[p.id] : !!$("p-texto").value.trim());
   $("seguir").textContent = proximoIndice(atual)<0 ? (tem?"Enviar ✔":"Pular e enviar") : (tem?"Seguir ▶":"Pular ▶");
 }
 
-function avancar(){
-  salvarTexto();
-  if(proximoIndice(atual)<0 && !algumaResposta()){ pararVoz(); pararFala(); respostas={}; pilha=[]; mostrar("capa"); return; }
-  pilha.push(atual); irPara(proximoIndice(atual));
-}
+function avancar(){ salvarTexto(); pilha.push(atual); irPara(proximoIndice(atual)); }
 
 $("seguir").onclick = avancar;
 $("voltar").onclick = ()=>{ salvarTexto(); pararVoz(); pararFala();
@@ -566,21 +562,29 @@ function tentarDeNovo(){
 
 async function concluir(){
   pararVoz(); pararFala();
+  // quem pulou tudo conta como "zero": fica registrado, mas fora dos resultados e da meta
+  const vazia = !algumaResposta();
   const reg = montarRegistro();
+  reg.vazia = vazia ? "sim" : "";
   const fila = ler("cv_fila", []); fila.push(reg); guardar("cv_fila", fila);
-  const total = ler("cv_total", 0)+1; guardar("cv_total", total);
+  if(vazia) guardar("cv_puladas", ler("cv_puladas", 0)+1);
+  else guardar("cv_total", ler("cv_total", 0)+1);
+  $("fim-titulo").textContent = vazia ? "Tudo bem!" : "Valeu!";
+  $("fim-texto").textContent = vazia ? "Você pulou as perguntas, e está tudo certo. Obrigado por passar aqui!"
+    : "Sua voz entrou. Vamos juntar tudo e devolver para o bairro o que a gente ouviu.";
+  $("contador-fim").classList.add("hidden");
   mostrar("fim");
   $("envio").textContent = "Enviando… pode seguir: a resposta fica guardada neste celular até chegar.";
   const pendentes = await esvaziarFila();
   mostrarEnvio(pendentes);
   atualizarContagem();
   if(pendentes) tentarDeNovo();
-  else buscarTotal().then(t => mostrarContador("contador-fim", t));
+  else if(!vazia) buscarTotal().then(t => mostrarContador("contador-fim", t));
 }
 
 function atualizarContagem(){
-  const t = ler("cv_total",0), f = ler("cv_fila",[]).length;
-  const txt = `Entrevistas feitas neste celular: ${t}. Esperando envio: ${f}.`;
+  const t = ler("cv_total",0), z = ler("cv_puladas",0), f = ler("cv_fila",[]).length;
+  const txt = `Entrevistas feitas neste celular: ${t}.` + (z ? ` Pularam tudo: ${z}.` : "") + ` Esperando envio: ${f}.`;
   $("contagem").textContent = txt; $("contagem-fim").textContent = txt;
 }
 

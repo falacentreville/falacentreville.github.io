@@ -134,7 +134,8 @@ function desenhar(){
   const n = linhas.length;
   $("n").textContent = n;
   const piloto = linhas.filter(ehPiloto).length;
-  $("cautela").textContent = (piloto ? `Inclui ${piloto} resposta(s) do piloto (teste). ` : "") + (n < 30
+  $("cautela").textContent = (piloto ? `Inclui ${piloto} resposta(s) do piloto (teste). ` : "")
+    + (vazias ? `${vazias} pessoa(s) abriram e pularam tudo; não entram nas contas. ` : "") + (n < 30
     ? "Ainda são poucas respostas. Use como pista, não como conclusão. É uma escuta voluntária: mostra quem respondeu, não o bairro todo."
     : "É uma escuta voluntária: mostra quem respondeu, não o bairro todo. Ao divulgar, diga sempre quantas pessoas responderam.");
   const box = $("blocos"); box.innerHTML = "";
@@ -202,11 +203,16 @@ function resumo(){
 
 // piloto: respostas marcadas como teste feitas na versão atual do questionário
 // (os testes técnicos antigos ficam sempre de fora)
-let brutas = [];
+let brutas = [], vazias = 0;
+// "pulou tudo": marcada pelo site ou sem nenhuma resposta (vale para as antigas também)
+const CAMPOS_RESPOSTA = ["relacao","idade","genero","votou","motivos","motivos_texto","dia_a_dia","prioridade","medos","medos_texto","por_que_mudam","por_que_mudam_texto","mudanca","confia","memoria"];
+const ehVazia = l => l.vazia === "sim" || !CAMPOS_RESPOSTA.some(c => String(l[c] || "").trim());
 const ehPiloto = l => l.origem === "teste" && /^\d{4}-\d{2}-\d{2}-v([3-9]|\d\d)/.test(l.versao || "");
 function montarTodas(){
   const comPiloto = $("ver-piloto").checked;
-  todas = brutas.filter(l => l.origem !== "teste" || (comPiloto && ehPiloto(l)));
+  const validas = brutas.filter(l => l.origem !== "teste" || (comPiloto && ehPiloto(l)));
+  vazias = validas.filter(ehVazia).length;
+  todas = validas.filter(l => !ehVazia(l));
 }
 
 function prepararFiltro(){
