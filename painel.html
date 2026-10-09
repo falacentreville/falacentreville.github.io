@@ -58,7 +58,7 @@ button{font:inherit;cursor:pointer}
     <label>Senha do painel
       <input type="password" id="chave" autocomplete="current-password" required>
     </label>
-    <label class="check"><input type="checkbox" id="lembrar"> Lembrar a senha neste aparelho</label>
+    <label class="check"><input type="checkbox" id="lembrar"> Lembrar a senha neste aparelho (só no seu celular, nunca em aparelho emprestado)</label>
     <button class="btn btn-p" type="submit">Ver respostas</button>
   </form>
   <div id="msg"></div>
@@ -89,6 +89,7 @@ const CONTAGENS = [
   { id:"motivos", titulo:"O que atrapalhou", multi:true,
     filtro:l => l.votou==="Não votei" || l.votou==="Justifiquei", base:"entre quem não votou ou justificou" },
   { id:"dia_a_dia", titulo:"O que mais pesa em casa", multi:true },
+  { id:"prioridade", titulo:"O que pesa mais (uma só)", base:"entre quem marcou mais de uma coisa" },
   { id:"medos", titulo:"Medo de perder ou ver piorar", multi:true },
   { id:"medos", chave:"medos_mulheres", titulo:"Medos entre as mulheres", multi:true,
     filtro:l => l.genero==="Mulher", base:"só mulheres" },
@@ -113,7 +114,7 @@ const FALAS = [
 const $ = id => document.getElementById(id);
 const seguro = (fn, p) => { try { return fn(); } catch(e) { return p; } };
 let linhas = [], todas = [], filtroBairro = "";
-const bairroDe = l => l.bairro || "centreville";   // respostas antigas são todas do Centreville
+const bairroDe = l => l.bairro || "centreville";   // respostas antigas são todas do Centre Ville
 const nomeBairro = id => ((window.BAIRROS || {})[id] || {}).nome || id;
 
 function contar(c){
@@ -159,11 +160,11 @@ function desenhar(){
     if(!lista.length) b.appendChild(el("p", "vazio", "Nada ainda."));
     lista.forEach(l => {
       const q = el("div", "fala", l[f.id]);
-      // a planilha pode devolver a data já formatada; só converte se vier no formato ISO
-      const quando = /^\d{4}-\d{2}-\d{2}T/.test(l.quando)
-        ? new Date(l.quando).toLocaleString("pt-BR", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"})
-        : String(l.quando || "");
-      q.appendChild(el("small", null, [quando, l.idade].filter(Boolean).join(" · ")));
+      // só o dia: hora e idade junto da fala ajudariam a reconhecer quem falou
+      const dia = /^\d{4}-\d{2}-\d{2}T/.test(l.quando)
+        ? new Date(l.quando).toLocaleDateString("pt-BR", {day:"2-digit", month:"2-digit"})
+        : String(l.quando || "").slice(0, 5);
+      q.appendChild(el("small", null, dia));
       b.appendChild(q);
     });
     box.appendChild(b);
@@ -187,6 +188,7 @@ function resumo(){
     `Não votaram no 1º turno: ${naoVotou} de ${v.resp} que responderam.`,
     `O que atrapalhou: ${top("motivos")}.`,
     `O que mais pesa em casa: ${top("dia_a_dia")}.`,
+    `O que pesa mais (uma só): ${top("prioridade")}.`,
     `Medo de perder ou ver piorar: ${top("medos")}.`,
     `Medos entre as mulheres: ${top("medos_mulheres")}.`,
     `Por que muita gente muda de voto: ${top("por_que_mudam")}.`,
@@ -279,6 +281,8 @@ function dadosDemo(){
     if(l.votou === "Não votei" || l.votou === "Justifiquei") l.motivos = varios(P.motivos, 2);
     ["dia_a_dia","medos","por_que_mudam"].forEach(k => l[k] = varios(P[k], 3));
     l.bairro = "centreville";
+    const pesos = l.dia_a_dia.split(" | ");
+    if(pesos.length >= 2) l.prioridade = pesos[0];
     l.confia = varios(P.confia, 2);
     l.modo = l.origem === "entrevista" ? "entrevista" : "autopreenchimento";
     l.entrevistador = l.modo === "entrevista" ? (i % 2 ? "Voluntária 1" : "Voluntário 2") : "";

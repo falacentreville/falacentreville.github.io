@@ -1,6 +1,6 @@
-# Fala, Centreville!
+# Fala, Centre Ville!
 
-Escuta anônima do Comitê pela Democracia do Centreville (Santo André, SP).
+Escuta anônima do Comitê pela Democracia do Centre Ville (Santo André, SP).
 
 ## Páginas
 
@@ -8,6 +8,7 @@ Escuta anônima do Comitê pela Democracia do Centreville (Santo André, SP).
 - `index.html?modo=entrevista`: versão para voluntários. Guarda as respostas no celular quando falta internet e envia depois.
 - `index.html?origem=zap` (ou outro nome): marca por onde a pessoa chegou. O cartaz usa `?origem=cartaz`.
 - `cartaz.html`: cartaz A4 com QR code para imprimir.
+- `guia.html`: guia de quem entrevista, com o que nunca fazer para não haver crime eleitoral.
 - `painel.html`: resultados somados, medos de mulheres e de homens separados e falas. Só abre com a senha de quem cuida das respostas. `painel.html?demo=1` mostra um exemplo com dados inventados.
 
 ## Onde ficam as respostas
@@ -20,5 +21,5 @@ Não coletamos nome, telefone, endereço nem voto. Não recebemos áudio. As res
 
 ## Créditos
 
-Desenvolvimento: Peterson Moreira, engenheiro e morador do Centreville.
+Desenvolvimento: Peterson Moreira, engenheiro e morador do Centre Ville.
 Fotos: página "Centreville é nosso" (Facebook).
