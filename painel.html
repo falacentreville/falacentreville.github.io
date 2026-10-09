@@ -43,6 +43,8 @@ button{font:inherit;cursor:pointer}
 .fala{border-left:3px solid var(--verde);padding:6px 10px;margin:8px 0;background:#191613;border-radius:6px}
 .fala small{display:block;color:var(--suave);font-size:12px;margin-top:4px}
 .vazio{color:var(--suave);font-style:italic}
+.filtro{display:grid;gap:6px;margin:8px 0 4px;font-weight:500}
+.filtro select{font:inherit;padding:10px;border-radius:12px;border:2px solid var(--linha);background:#0f0d0c;color:var(--tinta)}
 .demo-aviso{background:var(--rosa);color:#fff;font-weight:700;padding:10px 12px;border-radius:10px;margin:12px 0}
 </style>
 </head>
@@ -69,22 +71,33 @@ button{font:inherit;cursor:pointer}
       <button class="btn btn-p" id="copiar" type="button">Copiar resumo</button>
       <button class="btn btn-s" id="atualizar" type="button">Atualizar</button>
     </div>
+    <label class="filtro" id="filtro-bairro" hidden>Bairro
+      <select id="bairro-sel"></select>
+    </label>
     <div id="blocos"></div>
   </section>
 </div>
 
+<script src="bairros.js"></script>
 <script>
 /* mesma URL do Apps Script usada no index.html */
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbxWutlNNs9DBleWporYzgdAvXfSzCzRM2ow4xdyfvMPuPintMMF_gqKim_zjQnr7bQ/exec";
 
+// "chave" diferencia blocos que contam o mesmo campo com filtros diferentes
 const CONTAGENS = [
   { id:"votou", titulo:"Conseguiu votar no 1º turno?" },
   { id:"motivos", titulo:"O que atrapalhou", multi:true,
     filtro:l => l.votou==="Não votei" || l.votou==="Justifiquei", base:"entre quem não votou ou justificou" },
   { id:"dia_a_dia", titulo:"O que mais pesa em casa", multi:true },
   { id:"medos", titulo:"Medo de perder ou ver piorar", multi:true },
+  { id:"medos", chave:"medos_mulheres", titulo:"Medos entre as mulheres", multi:true,
+    filtro:l => l.genero==="Mulher", base:"só mulheres" },
+  { id:"medos", chave:"medos_homens", titulo:"Medos entre os homens", multi:true,
+    filtro:l => l.genero==="Homem", base:"só homens" },
+  { id:"por_que_mudam", titulo:"Por que muita gente muda de voto", multi:true },
   { id:"confia", titulo:"Em quem confia para se informar", multi:true },
   { id:"idade", titulo:"Faixa de idade" },
+  { id:"genero", titulo:"Gênero" },
   { id:"relacao", titulo:"Ligação com o bairro" },
   { id:"origem", titulo:"Por onde chegou" },
   { id:"entrevistador", titulo:"Entrevistas por voluntário" }
@@ -92,13 +105,16 @@ const CONTAGENS = [
 const FALAS = [
   { id:"motivos_texto", titulo:"Por que não votou, nas palavras das pessoas" },
   { id:"medos_texto", titulo:"Medos, nas palavras das pessoas" },
+  { id:"por_que_mudam_texto", titulo:"Por que mudam de voto, nas palavras das pessoas" },
   { id:"mudanca", titulo:"O que mudaria" },
   { id:"memoria", titulo:"Histórias do bairro" }
 ];
 
 const $ = id => document.getElementById(id);
 const seguro = (fn, p) => { try { return fn(); } catch(e) { return p; } };
-let linhas = [];
+let linhas = [], todas = [], filtroBairro = "";
+const bairroDe = l => l.bairro || "centreville";   // respostas antigas são todas do Centreville
+const nomeBairro = id => ((window.BAIRROS || {})[id] || {}).nome || id;
 
 function contar(c){
   const base = c.filtro ? linhas.filter(c.filtro) : linhas;
@@ -125,7 +141,7 @@ function desenhar(){
     if(!r.itens.length) return;
     const b = el("div", "bloco");
     b.appendChild(el("h2", null, c.titulo));
-    b.appendChild(el("p", "base", `${r.resp} responderam${c.base ? " (" + c.base + ")" : ""}${c.multi ? ". Cada pessoa pôde marcar mais de uma." : "."}`));
+    b.appendChild(el("p", "base", `${r.resp} responderam${c.base ? " (" + c.base + ")" : ""}${c.multi ? ". Cada pessoa pôde marcar mais de uma." : "."}${r.resp < 20 ? " Poucas respostas: use como pista." : ""}`));
     r.itens.forEach(([rot, q]) => {
       const d = el("div", "barra");
       const t = el("div", "rot"); t.appendChild(el("span", null, rot)); t.appendChild(el("span", null, `${q} de ${r.resp}`));
@@ -157,21 +173,42 @@ function desenhar(){
 function resumo(){
   const n = linhas.length, hoje = new Date().toLocaleDateString("pt-BR");
   const prefixo = DEMO ? ["(EXEMPLO COM DADOS INVENTADOS)"] : [];
-  const top = (id, k=3) => {
-    const c = CONTAGENS.find(x => x.id === id), r = contar(c);
+  const bloco = chave => CONTAGENS.find(x => (x.chave || x.id) === chave);
+  const top = (chave, k=3) => {
+    const r = contar(bloco(chave));
     return r.itens.slice(0,k).map(([rot,q]) => `${rot} (${q} de ${r.resp})`).join("; ") || "sem respostas";
   };
-  const v = contar(CONTAGENS[0]);
+  const v = contar(bloco("votou"));
   const naoVotou = v.itens.filter(([rot]) => rot === "Não votei" || rot === "Justifiquei").reduce((s,[,q]) => s+q, 0);
+  const onde = filtroBairro ? nomeBairro(filtroBairro) : (new Set(todas.map(bairroDe)).size > 1 ? "todos os bairros" : nomeBairro(bairroDe(todas[0] || {})));
   return [...prefixo,
-    `Fala, Centreville! · resumo de ${hoje}`,
+    `Fala, ${onde}! · resumo de ${hoje}`,
     `${n} respostas. Escuta voluntária: mostra quem respondeu, não o bairro todo.`,
     `Não votaram no 1º turno: ${naoVotou} de ${v.resp} que responderam.`,
     `O que atrapalhou: ${top("motivos")}.`,
     `O que mais pesa em casa: ${top("dia_a_dia")}.`,
     `Medo de perder ou ver piorar: ${top("medos")}.`,
+    `Medos entre as mulheres: ${top("medos_mulheres")}.`,
+    `Por que muita gente muda de voto: ${top("por_que_mudam")}.`,
     `Em quem confiam para se informar: ${top("confia", 2)}.`
   ].join("\n");
+}
+
+function prepararFiltro(){
+  const ids = [...new Set(todas.map(bairroDe))];
+  if(ids.length < 2){ $("filtro-bairro").hidden = true; filtroBairro = ""; return; }
+  const sel = $("bairro-sel"); sel.innerHTML = "";
+  [["", "Todos os bairros"], ...ids.map(id => [id, nomeBairro(id)])].forEach(([v, t]) => {
+    const o = el("option", null, t); o.value = v; sel.appendChild(o);
+  });
+  sel.value = ids.includes(filtroBairro) ? filtroBairro : "";
+  filtroBairro = sel.value;
+  $("filtro-bairro").hidden = false;
+}
+
+function aplicarFiltro(){
+  linhas = filtroBairro ? todas.filter(l => bairroDe(l) === filtroBairro) : todas.slice();
+  desenhar();
 }
 
 async function carregar(chave){
@@ -181,10 +218,10 @@ async function carregar(chave){
     const r = await fetch(ENDPOINT, { method:"POST", body: JSON.stringify({ acao:"painel", chave }) });
     const j = await r.json();
     if(j.erro){ $("msg").textContent = j.erro; return; }
-    linhas = (j.linhas || []).filter(l => l.origem !== "teste");
+    todas = (j.linhas || []).filter(l => l.origem !== "teste");
     $("msg").textContent = "Atualizado às " + new Date().toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}) + ".";
     $("entrar").hidden = true; $("resultado").hidden = false;
-    desenhar();
+    prepararFiltro(); aplicarFiltro();
   }catch(e){
     $("msg").textContent = "Não consegui carregar. Confira a internet e tente de novo.";
   }
@@ -197,7 +234,8 @@ $("entrar").onsubmit = ev => {
   else seguro(() => localStorage.removeItem("cv_chave_painel"));
   carregar(chave);
 };
-$("atualizar").onclick = () => DEMO ? desenhar() : carregar($("chave").value);
+$("atualizar").onclick = () => DEMO ? aplicarFiltro() : carregar($("chave").value);
+$("bairro-sel").onchange = () => { filtroBairro = $("bairro-sel").value; aplicarFiltro(); };
 $("copiar").onclick = async () => {
   const t = resumo();
   try{ await navigator.clipboard.writeText(t); $("msg").textContent = "Resumo copiado. É só colar no WhatsApp."; }
@@ -220,23 +258,27 @@ function dadosDemo(){
     idade:[["16 a 24",4],["25 a 34",5],["35 a 59",8],["60 ou mais",5]],
     votou:[["Sim, votei",12],["Não votei",6],["Justifiquei",1],["Prefiro não dizer",1]],
     motivos:[["Distância ou falta de condução",5],["Estava trabalhando",4],["Desânimo, não acredito mais",4],["Saúde, idade ou dificuldade de andar",3],["Não sabia onde votar",2],["Problema com título ou documento",1]],
-    dia_a_dia:[["Preço da comida e das contas",8],["Trabalho e renda",6],["Saúde e fila no posto",6],["Segurança e violência",4],["Ônibus e transporte",4],["Escola e creche",3],["Futuro dos jovens",3],["Moradia e escritura",2]],
-    medos:[["SUS, remédio de graça, Farmácia Popular",8],["Aposentadoria e direitos de quem trabalha",6],["Bolsa Família e outros benefícios",5],["Emprego",5],["Faculdade, cotas e ProUni",3],["Liberdade de falar e se manifestar",3],["Segurança",3]],
+    genero:[["Mulher",12],["Homem",10],["Prefiro não dizer",1],["Outro",1]],
+    dia_a_dia:[["Preço da comida e das contas",8],["Dívidas e nome sujo",5],["Trabalho e renda",6],["Saúde e fila no posto",6],["Segurança e violência",4],["Ônibus e transporte",4],["Escola e creche",3],["Futuro dos jovens",3],["Moradia e escritura",2]],
+    medos:[["SUS, remédio de graça, Farmácia Popular",8],["Aposentadoria e direitos de quem trabalha",6],["Bolsa Família e outros benefícios",5],["Emprego",5],["Segurança e crime",5],["Violência contra a mulher",4],["Corrupção",4],["Mais armas nas ruas",3],["Escola, faculdade, cotas e ProUni",3],["Liberdade de falar e se manifestar",2]],
+    por_que_mudam:[["Preço das coisas e dívidas",8],["Violência e crime",6],["Promessas que não foram cumpridas",6],["Cansaço, vontade de mudar",5],["O que chega no WhatsApp e nas redes",5],["Corrupção",4],["Orientação da igreja",3],["Falta de emprego",3],["Costumes e família",2],["Benefício que recebeu ou perdeu",2]],
     confia:[["Família e vizinhos",8],["Grupos de WhatsApp",6],["YouTube, TikTok ou Instagram",4],["TV",4],["Igreja",3],["Rádio",1]],
     origem:[["entrevista",10],["cartaz",6],["link",4],["zap",2]]
   };
   const FALAS_DEMO = {
     motivos_texto:["Não tinha ônibus cedo e a subida é pesada pra minha perna.","Mudaram o lugar de votação e eu não sabia.","Trabalhei no domingo, plantão no mercado."],
     medos_texto:["Medo de acabar o remédio do posto.","Medo de mexerem na aposentadoria da minha mãe."],
+    por_que_mudam_texto:["O pessoal vota em quem promete acabar com a violência.","A conta não fecha, aí a gente quer tentar outra coisa."],
     mudanca:["Creche perto de casa para eu poder trabalhar.","Luz na rua de baixo, à noite fica muito escuro.","Mais ônibus de manhã cedo.","Lugar para a molecada jogar bola e fazer curso."],
     memoria:["As festas no campo, todo mundo junto.","Quando a gente carregava água de balde antes de chegar a rede."]
   };
   const linhasDemo = [];
   for(let i=0; i<24; i++){
     const l = { quando: new Date(Date.UTC(2026, 9, 10 + Math.floor(i/12), 12 + (i % 9), (i*7) % 60)).toISOString() };
-    ["relacao","idade","votou","origem"].forEach(k => l[k] = um(P[k]));
+    ["relacao","idade","genero","votou","origem"].forEach(k => l[k] = um(P[k]));
     if(l.votou === "Não votei" || l.votou === "Justifiquei") l.motivos = varios(P.motivos, 2);
-    ["dia_a_dia","medos"].forEach(k => l[k] = varios(P[k], 3));
+    ["dia_a_dia","medos","por_que_mudam"].forEach(k => l[k] = varios(P[k], 3));
+    l.bairro = "centreville";
     l.confia = varios(P.confia, 2);
     l.modo = l.origem === "entrevista" ? "entrevista" : "autopreenchimento";
     l.entrevistador = l.modo === "entrevista" ? (i % 2 ? "Voluntária 1" : "Voluntário 2") : "";
@@ -245,16 +287,16 @@ function dadosDemo(){
   // espalha as falas inventadas pelas linhas, respeitando quem não votou
   const semVoto = linhasDemo.filter(l => l.motivos);
   FALAS_DEMO.motivos_texto.forEach((t, i) => { if(semVoto[i]) semVoto[i].motivos_texto = t; });
-  ["medos_texto","mudanca","memoria"].forEach((k, j) => FALAS_DEMO[k].forEach((t, i) => { linhasDemo[(i*5 + j*3) % 24][k] = t; }));
+  ["medos_texto","por_que_mudam_texto","mudanca","memoria"].forEach((k, j) => FALAS_DEMO[k].forEach((t, i) => { linhasDemo[(i*5 + j*3) % 24][k] = t; }));
   return linhasDemo;
 }
 
 if(DEMO){
   $("demo-aviso").hidden = false;
   $("entrar").hidden = true; $("resultado").hidden = false;
-  linhas = dadosDemo();
+  todas = dadosDemo();
   $("msg").textContent = "Exemplo com 24 respostas inventadas.";
-  desenhar();
+  prepararFiltro(); aplicarFiltro();
 } else {
   const salva = seguro(() => localStorage.getItem("cv_chave_painel"), null);
   if(salva){ $("chave").value = salva; $("lembrar").checked = true; carregar(salva); }

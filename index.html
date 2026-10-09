@@ -135,20 +135,20 @@ footer .credito{margin:0;font-size:13px}
 <div class="wrap">
 
   <div class="topo">
-    <span class="tag">Comitê pela Democracia · Centreville</span>
+    <span class="tag" id="tag">Comitê pela Democracia · Centreville</span>
     <span id="selo-modo" class="modo hidden">Entrevista</span>
   </div>
 
   <!-- CAPA -->
   <section id="capa" class="capa">
-    <figure class="foto foto-hist">
-      <img src="img/ocupacao-1982.jpg" alt="Foto antiga em preto e branco: moradores caminhando juntos pela rua do Centreville, na época da ocupação" width="472" height="288">
-      <figcaption>Os primeiros moradores, na época da ocupação. Foto: página “Centreville é nosso”.</figcaption>
+    <figure class="foto foto-hist" id="foto-capa">
+      <img id="foto-capa-img" src="img/ocupacao-1982.jpg" alt="Foto antiga em preto e branco: moradores caminhando juntos pela rua do Centreville, na época da ocupação" width="472" height="288">
+      <figcaption id="foto-capa-legenda">Os primeiros moradores, na época da ocupação. Foto: página “Centreville é nosso”.</figcaption>
     </figure>
-    <h1>Fala,<br><span>Centre&shy;ville!</span></h1>
-    <div class="faixa">Desde 16 de julho de 1982, na luta</div>
-    <p class="lead">Este bairro nasceu de gente que não esperou ninguém fazer por ela. Agora a gente quer te ouvir.</p>
-    <p>São poucas perguntas, uns 3 minutos. Você pode tocar nas respostas ou <b>falar</b> no microfone. Dá para ouvir cada pergunta em voz alta.</p>
+    <h1>Fala,<br><span id="titulo-bairro">Centre&shy;ville!</span></h1>
+    <div class="faixa" id="faixa">Desde 16 de julho de 1982, na luta</div>
+    <p class="lead" id="lead">Este bairro nasceu de gente que não esperou ninguém fazer por ela. Agora a gente quer te ouvir.</p>
+    <p>São poucas perguntas, uns 4 minutos. Você pode tocar nas respostas ou <b>falar</b> no microfone. Dá para ouvir cada pergunta em voz alta.</p>
 
     <div class="selos">
       <div class="selo"><span class="ic" aria-hidden="true">🙈</span><div><b>Não pedimos nome, telefone nem endereço.</b>Nem em quem você votou.</div></div>
@@ -166,7 +166,7 @@ footer .credito{margin:0;font-size:13px}
 
     <button class="btn btn-p" id="comecar">Começar ▶</button>
 
-    <p class="quem">Quem faz: o Comitê pela Democracia do Centreville, grupo de moradores que também faz atividades políticas. Isto é uma escuta voluntária para entender o bairro e planejar ações. Não é pesquisa eleitoral.</p>
+    <p class="quem" id="quem">Quem faz: o Comitê pela Democracia do Centreville, grupo de moradores que também faz atividades políticas. Isto é uma escuta voluntária para entender o bairro e planejar ações. Não é pesquisa eleitoral.</p>
   </section>
 
   <!-- PERGUNTA -->
@@ -187,9 +187,9 @@ footer .credito{margin:0;font-size:13px}
 
   <!-- FIM -->
   <section id="fim" class="fim hidden">
-    <figure class="foto">
-      <img src="img/mural.jpg" alt="Mural de grafite colorido com a palavra Centre-Ville e moradores pintados" width="414" height="172">
-      <figcaption>Mural do Centreville. Foto: página “Centreville é nosso”.</figcaption>
+    <figure class="foto" id="foto-fim">
+      <img id="foto-fim-img" src="img/mural.jpg" alt="Mural de grafite colorido com a palavra Centre-Ville e moradores pintados" width="414" height="172">
+      <figcaption id="foto-fim-legenda">Mural do Centreville. Foto: página “Centreville é nosso”.</figcaption>
     </figure>
     <h2>Valeu!</h2>
     <p style="font-size:21px">Sua voz entrou. Vamos juntar tudo e devolver para o bairro o que a gente ouviu.</p>
@@ -226,7 +226,7 @@ footer .credito{margin:0;font-size:13px}
       <li>Não repassamos respostas nem contatos a partidos, candidatos ou campanhas.</li>
       <li>Depois do 2º turno, vamos contar ao bairro o que ouvimos.</li>
     </ul>
-    <p class="credito">Feito por Peterson Moreira, morador do Centreville, para o Comitê pela Democracia do Centreville.</p>
+    <p class="credito" id="credito">Feito por Peterson Moreira, morador do Centreville, para o Comitê pela Democracia do Centreville.</p>
   </footer>
 </div>
 
@@ -237,21 +237,29 @@ footer .credito{margin:0;font-size:13px}
   </div>
 </nav>
 
+<script src="bairros.js"></script>
 <script>
 /* ===== CONFIGURAÇÃO: preencher depois de publicar o Apps Script ===== */
 const CONFIG = {
   ENDPOINT: "https://script.google.com/macros/s/AKfycbxWutlNNs9DBleWporYzgdAvXfSzCzRM2ow4xdyfvMPuPintMMF_gqKim_zjQnr7bQ/exec",
   LINK_GRUPO: "",          // link de convite do grupo de WhatsApp (opcional)
-  VERSAO: "2026-10-09"
+  VERSAO: "2026-10-09-v2"
 };
 
-/* ===== PERGUNTAS ===== */
+/* ===== BAIRRO (vem do link: ?bairro=ID; sem parâmetro é o Centreville) ===== */
+const BAIRRO = window.lerBairro ? lerBairro()
+  : { id:"centreville", dados:{}, nome:"Centreville", titulo:"Centreville", com:"com o Centreville", de:"do Centreville" };
+
+/* ===== PERGUNTAS (versão 2) ===== */
 const PERGUNTAS = [
-  { id:"relacao", tipo:"uma", titulo:"Qual é a sua ligação com o Centreville?",
+  { id:"relacao", tipo:"uma", titulo:`Qual é a sua ligação ${BAIRRO.com}?`,
     opcoes:["Moro aqui","Trabalho aqui","Tenho família aqui","Outra"] },
 
   { id:"idade", tipo:"uma", titulo:"Qual a sua idade?", dica:"Só a faixa. Serve para a gente saber se está ouvindo jovens e mais velhos.",
     opcoes:["16 a 24","25 a 34","35 a 59","60 ou mais","Prefiro não dizer"] },
+
+  { id:"genero", tipo:"uma", titulo:"Você é:", dica:"Serve para a gente saber o que pensam as mulheres e os homens do bairro.",
+    opcoes:["Mulher","Homem","Outro","Prefiro não dizer"] },
 
   { id:"votou", tipo:"uma", titulo:"No 1º turno, dia 4 de outubro, você conseguiu votar?",
     dica:"Não vamos perguntar em quem.",
@@ -263,11 +271,15 @@ const PERGUNTAS = [
     fala:"Quer contar o que aconteceu? Aperte e fale." },
 
   { id:"dia_a_dia", tipo:"varias", max:3, titulo:"O que mais pesa hoje na sua casa?", dica:"Pode marcar até 3.",
-    opcoes:["Preço da comida e das contas","Trabalho e renda","Saúde e fila no posto","Segurança e violência","Ônibus e transporte","Moradia e escritura","Escola e creche","Futuro dos jovens","Lazer, cultura e esporte","Outro"] },
+    opcoes:["Preço da comida e das contas","Dívidas e nome sujo","Trabalho e renda","Saúde e fila no posto","Segurança e violência","Ônibus e transporte","Moradia e escritura","Escola e creche","Futuro dos jovens","Lazer, cultura e esporte","Outro"] },
 
   { id:"medos", tipo:"varias", max:3, titulo:"Olhando para o país, o que você tem medo de perder ou ver piorar?", dica:"Pode marcar até 3.",
-    opcoes:["SUS, remédio de graça, Farmácia Popular","Bolsa Família e outros benefícios","Aposentadoria e direitos de quem trabalha","Faculdade, cotas e ProUni","Liberdade de falar e se manifestar","Respeito a negros, mulheres e LGBT","Emprego","Segurança","Nada me preocupa","Outro"],
+    opcoes:["SUS, remédio de graça, Farmácia Popular","Bolsa Família e outros benefícios","Aposentadoria e direitos de quem trabalha","Emprego","Escola, faculdade, cotas e ProUni","Violência contra a mulher","Mais armas nas ruas","Segurança e crime","Corrupção","Liberdade de falar e se manifestar","Respeito a negros e LGBT","Nada me preocupa","Outro"],
     fala:"Do que você tem medo? Pode falar com suas palavras." },
+
+  { id:"por_que_mudam", tipo:"varias", max:3, titulo:"Por que tanta gente aqui do bairro muda de voto de uma eleição para outra?", dica:"Na sua opinião. Pode marcar até 3.",
+    opcoes:["Preço das coisas e dívidas","Falta de emprego","Violência e crime","Corrupção","Promessas que não foram cumpridas","Cansaço, vontade de mudar","O que chega no WhatsApp e nas redes","Orientação da igreja","Costumes e família","Benefício que recebeu ou perdeu","Outro motivo"],
+    fala:"Quer explicar melhor? Aperte e fale." },
 
   { id:"mudanca", tipo:"texto", titulo:"Se você pudesse mudar uma coisa na sua vida ou no bairro, o que seria?",
     dica:"Fale com calma. Não precisa ser bonito, precisa ser verdade.",
@@ -276,8 +288,8 @@ const PERGUNTAS = [
   { id:"confia", tipo:"varias", max:2, titulo:"Em quem você mais confia para saber das coisas?", dica:"Pode marcar até 2.",
     opcoes:["Família e vizinhos","Igreja","Grupos de WhatsApp","TV","YouTube, TikTok ou Instagram","Rádio","Associação de moradores","Não confio em ninguém"] },
 
-  { id:"memoria", tipo:"texto", titulo:"Tem alguma história do Centreville que merece ser lembrada?",
-    dica:"A ocupação, uma festa, uma luta, uma pessoa. Sem nome completo de ninguém.",
+  { id:"memoria", tipo:"texto", titulo:`Tem alguma história ${BAIRRO.de} que merece ser lembrada?`,
+    dica: BAIRRO.dados.memoria_dica || "Uma festa, uma luta, uma pessoa. Sem nome completo de ninguém.",
     fala:"Conta pra gente. Aperte e fale." }
 ];
 
@@ -285,7 +297,9 @@ const PERGUNTAS = [
 const qs = new URLSearchParams(location.search);
 const MODO_ENTREVISTA = qs.get("modo")==="entrevista";
 // de onde a pessoa veio: ?origem=cartaz, ?origem=zap etc.
-const ORIGEM = (qs.get("origem")||"").replace(/[^a-z0-9_-]/gi,"").slice(0,20) || (MODO_ENTREVISTA ? "entrevista" : "link");
+const EM_PRODUCAO = location.hostname === "falacentreville.github.io";
+const ORIGEM = !EM_PRODUCAO ? "teste"
+  : (qs.get("origem")||"").replace(/[^a-z0-9_-]/gi,"").slice(0,20) || (MODO_ENTREVISTA ? "entrevista" : "link");
 const $ = id => document.getElementById(id);
 let respostas = {}, pilha = [], atual = -1;
 
@@ -456,6 +470,7 @@ function montarRegistro(){
   if(r.memoria==="" && respostas["memoria_texto"]) r.memoria = respostas["memoria_texto"];
   delete r.mudanca_texto; delete r.memoria_texto;
   r.origem = ORIGEM;
+  r.bairro = BAIRRO.id;
   return r;
 }
 
@@ -496,7 +511,28 @@ function atualizarContagem(){
 $("proxima").onclick = ()=>{ respostas={}; pilha=[]; irPara(0); };
 window.addEventListener("online", ()=>esvaziarFila().then(atualizarContagem));
 
+/* ===== TEXTOS DO BAIRRO ===== */
+function aplicarBairro(){
+  const d = BAIRRO.dados, comite = d.comite || "Comitê pela Democracia";
+  document.title = `Fala, ${BAIRRO.nome}!`;
+  $("tag").textContent = d.tag || comite;
+  $("titulo-bairro").textContent = BAIRRO.titulo + "!";
+  if(d.faixa) $("faixa").textContent = d.faixa; else $("faixa").classList.add("hidden");
+  $("lead").textContent = d.lead || "A gente quer ouvir quem vive aqui.";
+  const foto = (fig, f) => {
+    if(!f){ $(fig).classList.add("hidden"); return; }
+    const img = $(fig + "-img");
+    img.src = f.src; img.alt = f.alt; img.width = f.w; img.height = f.h;
+    $(fig + "-legenda").textContent = f.legenda;
+  };
+  foto("foto-capa", d.foto);
+  foto("foto-fim", d.mural);
+  $("quem").textContent = `Quem faz: o ${comite}, grupo de moradores que também faz atividades políticas. Isto é uma escuta voluntária para entender o bairro e planejar ações. Não é pesquisa eleitoral.`;
+  $("credito").textContent = `Feito por Peterson Moreira, morador do Centreville, para o ${comite}.`;
+}
+
 /* ===== INÍCIO ===== */
+aplicarBairro();
 if(CONFIG.LINK_GRUPO) $("link-grupo").href = CONFIG.LINK_GRUPO; else $("card-grupo").classList.add("hidden");
 if(MODO_ENTREVISTA){
   $("selo-modo").classList.remove("hidden");

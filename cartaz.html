@@ -47,14 +47,14 @@ h1 span{background:#ffc629;padding:0 3mm;box-decoration-break:clone;-webkit-box-
 </div>
 
 <main class="folha">
-  <div class="tag">Comitê pela Democracia do Centreville</div>
-  <h1><span>Fala,</span><br><span>Centreville!</span></h1>
+  <div class="tag" id="tag">Comitê pela Democracia do Centreville</div>
+  <h1><span>Fala,</span><br><span id="titulo-bairro">Centreville!</span></h1>
   <p class="sub">A gente quer ouvir você.</p>
 
   <div class="meio">
     <div id="qr" role="img" aria-label="QR code para a escuta"></div>
     <ul class="pontos">
-      <li>3 minutos<b>poucas perguntas</b></li>
+      <li>4 minutos<b>poucas perguntas</b></li>
       <li>Sem nome<b>sem telefone, sem endereço</b></li>
       <li>Pode falar<b>no microfone, sem digitar</b></li>
     </ul>
@@ -63,20 +63,38 @@ h1 span{background:#ffc629;padding:0 3mm;box-decoration-break:clone;-webkit-box-
   <p class="mire">Aponte a câmera do celular para o quadrado.</p>
   <p class="url" id="url"></p>
 
-  <div class="foto">
-    <img src="img/ocupacao-1982.jpg" alt="Foto antiga dos primeiros moradores do Centreville caminhando juntos">
-    <p>Desde 16 de julho de 1982, o Centreville se faz com gente que não espera ninguém fazer por ela. Conte o que pesa na sua casa e o que precisa mudar.
-      <small>Escuta anônima e voluntária do Comitê pela Democracia do Centreville. Não é pesquisa eleitoral. Foto: página “Centreville é nosso”.</small>
+  <div class="foto" id="rodape">
+    <img id="foto" src="img/ocupacao-1982.jpg" alt="Foto antiga dos primeiros moradores do Centreville caminhando juntos">
+    <p><span id="texto">Desde 16 de julho de 1982, o Centreville se faz com gente que não espera ninguém fazer por ela. Conte o que pesa na sua casa e o que precisa mudar.</span>
+      <small id="miudo">Escuta anônima e voluntária do Comitê pela Democracia do Centreville. Não é pesquisa eleitoral. Foto: página “Centreville é nosso”.</small>
     </p>
   </div>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="bairros.js"></script>
 <script>
+  // cartaz de outro bairro: cartaz.html?bairro=ID (sem parâmetro é o Centreville)
+  const B = window.lerBairro ? lerBairro() : { id: "centreville", dados: {}, nome: "Centreville" };
+  const d = B.dados, comite = d.comite || "Comitê pela Democracia";
+  const $ = id => document.getElementById(id);
+  document.title = `Cartaz · Fala, ${B.nome}!`;
+  $("tag").textContent = comite;
+  $("titulo-bairro").textContent = (B.dados.nome || "bairro") + "!";
+  $("texto").textContent = d.cartaz || "Conte o que pesa na sua casa e o que precisa mudar no bairro.";
+  if (d.foto) {
+    $("foto").src = d.foto.src; $("foto").alt = d.foto.alt;
+    $("miudo").textContent = `Escuta anônima e voluntária do ${comite}. Não é pesquisa eleitoral. ${d.foto.legenda.replace(/^.*Foto:/, "Foto:")}`;
+  } else {
+    $("foto").remove();
+    $("rodape").style.gridTemplateColumns = "1fr";
+    $("miudo").textContent = `Escuta anônima e voluntária do ${comite}. Não é pesquisa eleitoral.`;
+  }
   // endereço da página inicial, onde quer que o site esteja publicado
   const inicio = new URL("./", location.href);
-  const alvo = new URL("./?origem=cartaz", location.href).href;
-  document.getElementById("url").textContent = (inicio.host + inicio.pathname).replace(/\/$/, "");
+  const extra = B.id === "centreville" ? "" : `bairro=${B.id}&`;
+  const alvo = new URL(`./?${extra}origem=cartaz`, location.href).href;
+  $("url").textContent = (inicio.host + inicio.pathname).replace(/\/$/, "") + (extra ? `/?bairro=${B.id}` : "");
   // no celular, encolhe a folha para caber na tela (não afeta a impressão)
   function ajustar(){
     const f = document.querySelector(".folha");
