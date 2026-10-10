@@ -98,7 +98,8 @@ h1 span{background:#ffc629;padding:0 3mm;box-decoration-break:clone;-webkit-box-
   const inicio = new URL("./", location.href);
   const extra = B.id === "centreville" ? "" : `bairro=${B.id}&`;
   // cartaz.html?teste=1: o QR abre a escuta marcada como teste (fora das contas)
-  const TESTE = new URLSearchParams(location.search).has("teste");
+  // o piloto acabou em 10/10: no ar, o cartaz é sempre o oficial
+  const TESTE = location.hostname !== "falacentreville.github.io" && new URLSearchParams(location.search).has("teste");
   if (TESTE) document.querySelector(".folha").classList.add("teste");
   const alvo = new URL(`./?${extra}origem=${TESTE ? "teste" : "cartaz"}`, location.href).href;
   $("url").textContent = (inicio.host + inicio.pathname).replace(/\/$/, "") + (extra ? `/?bairro=${B.id}` : "");

@@ -327,8 +327,14 @@ const qs = new URLSearchParams(location.search);
 const MODO_ENTREVISTA = qs.get("modo")==="entrevista";
 // de onde a pessoa veio: ?origem=cartaz, ?origem=zap etc.
 const EM_PRODUCAO = location.hostname === "falacentreville.github.io";
+const origemUrl = (qs.get("origem")||"").replace(/[^a-z0-9_-]/gi,"").slice(0,20);
+// o piloto acabou em 10/10: no ar, um link de teste antigo vale como link comum
+if(EM_PRODUCAO && origemUrl === "teste"){
+  qs.delete("origem");
+  history.replaceState(null, "", location.pathname + (qs.toString() ? "?" + qs.toString() : "") + location.hash);
+}
 const ORIGEM = !EM_PRODUCAO ? "teste"
-  : (qs.get("origem")||"").replace(/[^a-z0-9_-]/gi,"").slice(0,20) || (MODO_ENTREVISTA ? "entrevista" : "link");
+  : (origemUrl !== "teste" && origemUrl) || (MODO_ENTREVISTA ? "entrevista" : "link");
 const $ = id => document.getElementById(id);
 let respostas = {}, pilha = [], atual = -1;
 
