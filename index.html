@@ -253,7 +253,7 @@ footer .credito{margin:0;font-size:13px}
 const CONFIG = {
   ENDPOINT: "https://script.google.com/macros/s/AKfycbxWutlNNs9DBleWporYzgdAvXfSzCzRM2ow4xdyfvMPuPintMMF_gqKim_zjQnr7bQ/exec",
   LINK_GRUPO: "",          // link de convite do grupo de WhatsApp (opcional)
-  VERSAO: "2026-10-09-v5",
+  VERSAO: "2026-10-09-v6",
   CONTADOR_MINIMO: 20,          // o contador da capa só aparece a partir deste número de respostas
   DIAS_DE_PAUSA: ["2026-10-25"] // regra do comitê: escuta parada no dia da eleição
 };
@@ -460,6 +460,7 @@ function pararVoz(){ if(temTTS) speechSynthesis.cancel(); $("btn-ouvir").classLi
 $("btn-ouvir").onclick = ()=>{
   if(!temTTS) return;
   if(speechSynthesis.speaking){ pararVoz(); return; }
+  pararFala();   // senão o microfone escreve a leitura da pergunta como resposta
   const p=PERGUNTAS[atual];
   let t = p.titulo + ". " + (p.dica||"");
   const ops = p.opcoesDe ? p.opcoesDe(respostas) : p.opcoes;
@@ -474,7 +475,25 @@ if(!temTTS) $("btn-ouvir").classList.add("hidden");
 
 /* ===== FALAR (voz para texto) ===== */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+// no celular, uma frase por vez: o modo contínuo do Android repete as palavras
+const MOVEL = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 let rec=null, gravando=false, baseTexto="";
+
+// junta os pedaços de uma gravação sem repetir: no Android cada pedaço novo
+// costuma trazer de novo as palavras anteriores ("a", "a questão", "a questão da")
+const semPontuacao = s => s.toLowerCase().replace(/[.,!?;:]/g, "").replace(/\s+/g, " ").trim();
+function juntarFala(results){
+  const partes = [];
+  for(let i = 0; i < results.length; i++){
+    const t = results[i][0].transcript.trim();
+    if(!t) continue;
+    const ult = partes.length ? semPontuacao(partes[partes.length - 1]) : "", novo = semPontuacao(t);
+    if(ult && novo.startsWith(ult)) partes[partes.length - 1] = t;
+    else if(ult && ult.startsWith(novo)) continue;
+    else partes.push(t);
+  }
+  return partes.join(" ");
+}
 function pararFala(){ if(rec && gravando){ gravando=false; try{rec.stop();}catch(e){} } marcarMic(false); }
 function marcarMic(on){ $("btn-mic").classList.toggle("gravando",on); $("mic-txt").textContent = on ? "Ouvindo… aperte para parar" : "Apertar e falar"; }
 
@@ -486,25 +505,31 @@ if(!SR){
   $("btn-mic").onclick = ()=>{
     if(gravando){ pararFala(); return; }
     pararVoz();
-    rec = new SR(); rec.lang="pt-BR"; rec.interimResults=true; rec.continuous=true;
+    const meu = rec = new SR(), alvo = atual;
+    meu.lang="pt-BR"; meu.interimResults=true; meu.continuous=!MOVEL;
     baseTexto = $("p-texto").value ? $("p-texto").value.trim()+" " : "";
-    let finais="";
-    rec.onresult = ev=>{
-      let prov="";
-      for(let i=ev.resultIndex;i<ev.results.length;i++){
-        const r=ev.results[i];
-        if(r.isFinal) finais += r[0].transcript.trim()+" "; else prov += r[0].transcript;
-      }
-      $("p-texto").value = (baseTexto + finais + prov).trimStart();
+    // fala que chega depois de trocar de pergunta não pode cair na pergunta seguinte
+    const valendo = () => rec === meu && atual === alvo;
+    meu.onresult = ev=>{
+      if(!valendo()) return;
+      // remonta o texto da gravação inteira a cada pedaço, em vez de ir somando
+      $("p-texto").value = (baseTexto + juntarFala(ev.results)).trimStart();
       atualizarSeguir();
     };
-    rec.onerror = ev=>{
+    meu.onerror = ev=>{
       if(ev.error==="not-allowed"||ev.error==="service-not-allowed")
         $("aviso-voz").textContent="O celular não deixou usar o microfone. Libere o microfone para este site, ou use o 🎤 do teclado.";
-      else if(ev.error==="no-speech") $("aviso-voz").textContent="Não ouvi nada. Aperte e tente de novo, mais perto do celular.";
+      else if(ev.error==="no-speech"){
+        gravando=false;   // silêncio longo: desliga em vez de ficar religando
+        if(!$("p-texto").value.trim()) $("aviso-voz").textContent="Não ouvi nada. Aperte e tente de novo, mais perto do celular.";
+      }
+      else if(ev.error==="network"){ gravando=false; $("aviso-voz").textContent="A fala precisa de internet. Confira a conexão ou use o 🎤 do teclado."; }
     };
-    rec.onend = ()=>{ if(gravando){ try{ baseTexto=$("p-texto").value.trim()+" "; finais=""; rec.start(); }catch(e){ pararFala(); } } else marcarMic(false); };
-    try{ rec.start(); gravando=true; marcarMic(true); }catch(e){ pararFala(); }
+    meu.onend = ()=>{
+      if(gravando && valendo()){ try{ baseTexto=$("p-texto").value.trim()+" "; meu.start(); }catch(e){ pararFala(); } }
+      else if(rec === meu) marcarMic(false);
+    };
+    try{ meu.start(); gravando=true; marcarMic(true); }catch(e){ pararFala(); }
   };
 }
 
