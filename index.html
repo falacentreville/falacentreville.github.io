@@ -155,6 +155,7 @@ footer .credito{margin:0;font-size:13px}
     <div class="faixa" id="faixa">Desde 16 de julho de 1982, na luta</div>
     <p class="contador hidden" id="contador" aria-live="polite"></p>
     <p class="lead" id="lead">Este bairro nasceu de gente que não esperou ninguém fazer por ela. Agora a gente quer te ouvir.</p>
+<p>O que você disser ajuda o comitê a decidir o que fazer no bairro, e o resultado volta para todo mundo.</p>
     <p>São poucas perguntas, uns 4 minutos. Você pode tocar nas respostas ou <b>falar</b> no microfone. Dá para ouvir cada pergunta em voz alta.</p>
 
     <div class="selos">
@@ -215,7 +216,7 @@ footer .credito{margin:0;font-size:13px}
 
     <div class="card" id="card-grupo">
       <h3>Quer somar com o comitê?</h3>
-      <p style="margin:0 0 12px">Aqui você não deixou contato. Se quiser participar das atividades, entre no grupo.</p>
+      <p style="margin:0 0 12px">Aqui você não deixou contato. Se quiser continuar a conversa e participar das atividades, entre no grupo.</p>
       <a class="btn btn-v" id="link-grupo" href="#" target="_blank" rel="noopener">Entrar no grupo do WhatsApp</a>
     </div>
 
@@ -252,7 +253,7 @@ footer .credito{margin:0;font-size:13px}
 const CONFIG = {
   ENDPOINT: "https://script.google.com/macros/s/AKfycbxWutlNNs9DBleWporYzgdAvXfSzCzRM2ow4xdyfvMPuPintMMF_gqKim_zjQnr7bQ/exec",
   LINK_GRUPO: "",          // link de convite do grupo de WhatsApp (opcional)
-  VERSAO: "2026-10-09-v4",
+  VERSAO: "2026-10-09-v5",
   CONTADOR_MINIMO: 20,          // o contador da capa só aparece a partir deste número de respostas
   DIAS_DE_PAUSA: ["2026-10-25"] // regra do comitê: escuta parada no dia da eleição
 };
@@ -264,7 +265,8 @@ const BAIRRO = window.lerBairro ? lerBairro()
 /* ===== PERGUNTAS (versão 2) ===== */
 const PERGUNTAS = [
   { id:"relacao", tipo:"uma", titulo:`Qual é a sua ligação ${BAIRRO.com}?`,
-    opcoes:["Moro aqui","Trabalho aqui","Tenho família aqui","Outra"],
+    dica:"Serve para ouvir tanto quem fez o bairro quanto quem chegou há pouco.",
+    opcoes:["Sou da ocupação ou nasci aqui","Cheguei depois, há mais de 10 anos","Cheguei há menos de 10 anos","Não moro, mas trabalho ou tenho família aqui","Outra"],
     fala:"Qual? Pode falar ou escrever.", falaSe:r => r.relacao==="Outra" },
 
   { id:"idade", tipo:"uma", titulo:"Qual a sua idade?", dica:"Só a faixa. Serve para a gente saber se está ouvindo jovens e mais velhos.",
@@ -277,10 +279,10 @@ const PERGUNTAS = [
     dica:"Não vamos perguntar em quem.",
     opcoes:["Sim, votei","Não votei","Justifiquei","Não tenho título ou não preciso votar","Prefiro não dizer"] },
 
-  { id:"motivos", tipo:"varias", max:3, titulo:"O que atrapalhou?", dica:"Pode marcar até 3.",
+  { id:"motivos", tipo:"varias", max:3, titulo:"Por que você não votou?", dica:"Pode marcar até 3.",
     se:r => r.votou==="Não votei" || r.votou==="Justifiquei",
-    opcoes:["Distância ou falta de condução","Não sabia onde votar","Estava trabalhando","Saúde, idade ou dificuldade de andar","Problema com título ou documento","Cuidando de criança ou familiar","Desânimo, não acredito mais","Estava fora da cidade","Outro motivo"],
-    fala:"Quer contar o que aconteceu? Aperte e fale." },
+    opcoes:["Distância ou falta de condução","Não sabia onde votar","Estava trabalhando ou sem tempo","Saúde, idade ou dificuldade de andar","Problema com título ou documento","Cuidando de criança ou familiar","Estava fora da cidade","Não me interesso por política","Não acredito em nenhum candidato","Não acredito mais na política","Outro motivo"],
+    fala:"Quer contar mais? Aperte e fale." },
 
   { id:"dia_a_dia", tipo:"varias", max:3, titulo:"O que mais pesa hoje na sua casa?", dica:"Pode marcar até 3.",
     opcoes:["Preço da comida e das contas","Dívidas e nome sujo","Trabalho e renda","Saúde e fila no posto","Segurança e violência","Ônibus e transporte","Moradia e escritura","Escola e creche","Futuro dos jovens","Lazer, cultura e esporte","Outro"],
@@ -289,11 +291,11 @@ const PERGUNTAS = [
   { id:"prioridade", tipo:"uma", titulo:"E dessas, qual pesa mais?", dica:"Escolha uma.",
     se:r => (r.dia_a_dia||[]).length >= 2, opcoesDe:r => r.dia_a_dia || [] },
 
-  { id:"medos", tipo:"varias", max:3, titulo:"Olhando para o país, o que você tem medo de perder ou ver piorar?", dica:"Pode marcar até 3.",
+  { id:"medos", tipo:"varias", max:3, titulo:"Olhando para o país, o que mais te preocupa hoje?", dica:"Pode marcar até 3.",
     opcoes:["SUS, remédio de graça, Farmácia Popular","Bolsa Família e outros benefícios","Aposentadoria e direitos de quem trabalha","Emprego","Escola, faculdade, cotas e ProUni","Violência contra a mulher","Mais armas nas ruas","Segurança e crime","Corrupção","Liberdade de falar e se manifestar","Respeito a negros e LGBT","Nada me preocupa","Outro"],
-    fala:"Do que você tem medo? Pode falar com suas palavras." },
+    fala:"O que te preocupa? Pode falar com suas palavras." },
 
-  { id:"por_que_mudam", tipo:"varias", max:3, titulo:"Por que tanta gente aqui do bairro muda de voto de uma eleição para outra?", dica:"Na sua opinião. Pode marcar até 3.",
+  { id:"por_que_mudam", tipo:"varias", max:3, titulo:"Na sua opinião, o que faz alguém do bairro mudar de voto de uma eleição para outra?", dica:"Pode marcar até 3.",
     opcoes:["Preço das coisas e dívidas","Falta de emprego","Violência e crime","Corrupção","Promessas que não foram cumpridas","Cansaço, vontade de mudar","O que chega no WhatsApp e nas redes","Orientação da igreja","Costumes e família","Benefício que recebeu ou perdeu","Outro motivo"],
     fala:"Quer explicar melhor? Aperte e fale." },
 
@@ -302,7 +304,7 @@ const PERGUNTAS = [
     fala:"Aperte e fale. Quando terminar, aperte de novo." },
 
   { id:"confia", tipo:"varias", max:2, titulo:"Em quem você mais confia para saber das coisas?", dica:"Pode marcar até 2.",
-    opcoes:["Família e vizinhos","Igreja","Grupos de WhatsApp","TV","YouTube, TikTok ou Instagram","Rádio","Associação de moradores","Não confio em ninguém"] },
+    opcoes:["Família e vizinhos","Igreja","Grupos de WhatsApp","TV","YouTube, TikTok ou Instagram","Rádio","Associação de moradores","Sindicato","Não confio em ninguém"] },
 
   { id:"memoria", tipo:"texto", titulo:`Tem alguma história ${BAIRRO.de} que merece ser lembrada?`,
     dica: BAIRRO.dados.memoria_dica || "Uma festa, uma luta, uma pessoa. Sem nome completo de ninguém.",

@@ -38,11 +38,14 @@ button{font:inherit;cursor:pointer}
 .barra{margin:8px 0}
 .barra .rot{display:flex;justify-content:space-between;gap:10px;font-size:15px}
 .barra .rot span:last-child{white-space:nowrap;color:var(--suave)}
+.barra.empilhada .rot{flex-direction:column;gap:2px}
+.barra.empilhada .rot span:last-child{white-space:normal}
 .barra .trilho{height:12px;background:#0f0d0c;border-radius:99px;overflow:hidden;margin-top:4px}
 .barra .trilho i{display:block;height:100%;background:linear-gradient(90deg,var(--amarelo),var(--laranja))}
 .fala{border-left:3px solid var(--verde);padding:6px 10px;margin:8px 0;background:#191613;border-radius:6px}
 .fala small{display:block;color:var(--suave);font-size:12px;margin-top:4px}
 .vazio{color:var(--suave);font-style:italic}
+.alerta{background:var(--rosa);color:#fff;font-weight:700;padding:8px 10px;border-radius:8px;margin:0 0 10px}
 .filtro{display:grid;gap:6px;margin:8px 0 4px;font-weight:500}
 .filtro select{font:inherit;padding:10px;border-radius:12px;border:2px solid var(--linha);background:#0f0d0c;color:var(--tinta)}
 .demo-aviso{background:var(--rosa);color:#fff;font-weight:700;padding:10px 12px;border-radius:10px;margin:12px 0}
@@ -87,16 +90,16 @@ const ENDPOINT = "https://script.google.com/macros/s/AKfycbxWutlNNs9DBleWporYzgd
 // "chave" diferencia blocos que contam o mesmo campo com filtros diferentes
 const CONTAGENS = [
   { id:"votou", titulo:"Conseguiu votar no 1º turno?" },
-  { id:"motivos", titulo:"O que atrapalhou", multi:true,
+  { id:"motivos", titulo:"Por que não votou", multi:true,
     filtro:l => l.votou==="Não votei" || l.votou==="Justifiquei", base:"entre quem não votou ou justificou" },
   { id:"dia_a_dia", titulo:"O que mais pesa em casa", multi:true },
   { id:"prioridade", titulo:"O que pesa mais (uma só)", base:"entre quem marcou mais de uma coisa" },
-  { id:"medos", titulo:"Medo de perder ou ver piorar", multi:true },
-  { id:"medos", chave:"medos_mulheres", titulo:"Medos entre as mulheres", multi:true,
+  { id:"medos", titulo:"O que mais preocupa no país", multi:true },
+  { id:"medos", chave:"medos_mulheres", titulo:"Preocupações entre as mulheres", multi:true,
     filtro:l => l.genero==="Mulher", base:"só mulheres" },
-  { id:"medos", chave:"medos_homens", titulo:"Medos entre os homens", multi:true,
+  { id:"medos", chave:"medos_homens", titulo:"Preocupações entre os homens", multi:true,
     filtro:l => l.genero==="Homem", base:"só homens" },
-  { id:"por_que_mudam", titulo:"Por que muita gente muda de voto (na opinião de quem respondeu)", multi:true },
+  { id:"por_que_mudam", titulo:"O que faz alguém mudar de voto (na opinião de quem respondeu)", multi:true },
   { id:"confia", titulo:"Em quem confia para se informar", multi:true },
   { id:"idade", titulo:"Faixa de idade" },
   { id:"genero", titulo:"Gênero" },
@@ -107,10 +110,10 @@ const CONTAGENS = [
 const FALAS = [
   { id:"motivos_texto", titulo:"Por que não votou, nas palavras das pessoas" },
   { id:"dia_a_dia_texto", titulo:"O que pesa em casa: os \"outros\", nas palavras das pessoas" },
-  { id:"medos_texto", titulo:"Medos, nas palavras das pessoas" },
-  { id:"por_que_mudam_texto", titulo:"Por que mudam de voto, nas palavras das pessoas" },
+  { id:"medos_texto", titulo:"Preocupações, nas palavras das pessoas" },
+  { id:"por_que_mudam_texto", titulo:"Por que alguém muda de voto, nas palavras das pessoas" },
   { id:"mudanca", titulo:"O que mudaria" },
-  { id:"memoria", titulo:"Histórias do bairro" },
+  { id:"memoria", titulo:"Histórias do bairro (material para o jornalzinho)" },
   { id:"relacao_texto", titulo:"Outra ligação com o bairro" }
 ];
 
@@ -138,8 +141,72 @@ function tempoMediano(){
   return { seg: Math.round(m), n: t.length };
 }
 const minSeg = s => `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, "0")} s`;
+// combinado em 09/10: se metade levar mais de 5 minutos, cortamos perguntas
+const LIMITE_SEG = 300;
+const regraTempo = tm => tm.n < 10 ? "Combinado: se metade levar mais de 5 minutos, cortamos perguntas. Ainda são poucas respostas com tempo medido."
+  : tm.seg > LIMITE_SEG ? "Passou de 5 minutos: pelo combinado, é hora de cortar perguntas."
+  : "Dentro do combinado: metade termina em até 5 minutos.";
+
+// motivos de quem não votou em dois grupos: dificuldade prática ou descrédito
+// (os rótulos antigos ficam na lista para as respostas do piloto)
+const DESCREDITO = ["Não me interesso por política","Não acredito em nenhum candidato","Não acredito mais na política","Desânimo, não acredito mais"];
+const PRATICOS = ["Distância ou falta de condução","Não sabia onde votar","Estava trabalhando ou sem tempo","Estava trabalhando","Saúde, idade ou dificuldade de andar","Problema com título ou documento","Cuidando de criança ou familiar","Estava fora da cidade"];
+const naoVotou = l => l.votou === "Não votei" || l.votou === "Justifiquei";
+const disseSeVotou = l => l.votou === "Sim, votei" || naoVotou(l);
+const motivosDe = l => String(l.motivos || "").split(" | ").map(v => v.trim()).filter(Boolean);
+const porDescredito = l => motivosDe(l).some(m => DESCREDITO.includes(m));
+const porPratica = l => motivosDe(l).some(m => PRATICOS.includes(m));
+
+function gruposMotivos(){
+  const nv = linhas.filter(l => naoVotou(l) && motivosDe(l).length);
+  return { n: nv.length, itens: [
+    ["Só dificuldade prática", nv.filter(l => porPratica(l) && !porDescredito(l)).length],
+    ["Só descrédito ou desinteresse", nv.filter(l => porDescredito(l) && !porPratica(l)).length],
+    ["Os dois", nv.filter(l => porPratica(l) && porDescredito(l)).length],
+    ["Só outro motivo", nv.filter(l => !porPratica(l) && !porDescredito(l)).length]
+  ].filter(([, q]) => q) };
+}
+
+// hipótese a testar: jovens e quem chegou depois deixam mais de votar, por descrédito
+const ORDEM_IDADE = ["16 a 24","25 a 34","35 a 59","60 ou mais"];
+const ORDEM_TEMPO = ["Sou da ocupação ou nasci aqui","Cheguei depois, há mais de 10 anos","Cheguei há menos de 10 anos","Não moro, mas trabalho ou tenho família aqui"];
+function cruzar(campo, ordem){
+  const base = linhas.filter(disseSeVotou);
+  return ordem.map(g => {
+    const gl = base.filter(l => l[campo] === g);
+    return { g, n: gl.length, nv: gl.filter(naoVotou).length, desc: gl.filter(l => naoVotou(l) && porDescredito(l)).length };
+  }).filter(x => x.n);
+}
 
 function el(tag, cls, txt){ const e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; }
+function barra(rot, txt, frac, empilhar){
+  const d = el("div", empilhar ? "barra empilhada" : "barra");
+  const t = el("div", "rot"); t.appendChild(el("span", null, rot)); t.appendChild(el("span", null, txt));
+  const tr = el("div", "trilho"); const i = el("i"); i.style.width = (100 * frac) + "%"; tr.appendChild(i);
+  d.appendChild(t); d.appendChild(tr); return d;
+}
+function blocosNaoVoto(box){
+  const gm = gruposMotivos();
+  if(gm.n){
+    const b = el("div", "bloco");
+    b.appendChild(el("h2", null, "Por que não votou: dificuldade prática ou descrédito?"));
+    b.appendChild(el("p", "base", `${gm.n} pessoas que não votaram disseram o motivo.${gm.n < 20 ? " Poucas respostas: use como pista." : ""}`));
+    gm.itens.forEach(([rot, q]) => b.appendChild(barra(rot, `${q} de ${gm.n}`, q / gm.n)));
+    box.appendChild(b);
+  }
+  [["idade", ORDEM_IDADE, "Quem não votou, por idade", "Hipótese a testar: os jovens e quem chegou depois deixam mais de votar, por descrédito. Conta só quem disse se votou."],
+   ["relacao", ORDEM_TEMPO, "Quem não votou, por tempo de bairro", "A mesma conta, separando quem é da ocupação de quem chegou depois."]
+  ].forEach(([campo, ordem, titulo, nota]) => {
+    const linhasG = cruzar(campo, ordem);
+    if(!linhasG.some(x => x.nv)) return;
+    const total = linhasG.reduce((s, x) => s + x.n, 0);
+    const b = el("div", "bloco");
+    b.appendChild(el("h2", null, titulo));
+    b.appendChild(el("p", "base", `${nota} "Por descrédito" é quem marcou desinteresse ou descrédito entre os motivos.${total < 20 ? " Poucas respostas: use como pista." : ""}`));
+    linhasG.forEach(x => b.appendChild(barra(x.g, `${x.nv} de ${x.n} não votaram${x.nv ? ` · ${x.desc} por descrédito` : ""}`, x.nv / x.n, true)));
+    box.appendChild(b);
+  });
+}
 
 function desenhar(){
   const n = linhas.length;
@@ -155,22 +222,20 @@ function desenhar(){
     const b = el("div", "bloco");
     b.appendChild(el("h2", null, "Tempo para responder"));
     b.appendChild(el("p", "base", `Metade respondeu em até ${minSeg(tm.seg)} (de ${tm.n} respostas com tempo medido). A promessa no site é de uns 4 minutos.`));
+    b.appendChild(el("p", tm.n >= 10 && tm.seg > LIMITE_SEG ? "alerta" : "base", regraTempo(tm)));
     box.appendChild(b);
   }
 
   CONTAGENS.forEach(c => {
     const r = contar(c);
-    if(!r.itens.length) return;
+    // logo depois de "Por que não votou" entram os blocos da hipótese, mesmo sem motivos marcados
+    if(!r.itens.length){ if(c.id === "motivos") blocosNaoVoto(box); return; }
     const b = el("div", "bloco");
     b.appendChild(el("h2", null, c.titulo));
     b.appendChild(el("p", "base", `${r.resp} responderam${c.base ? " (" + c.base + ")" : ""}${c.multi ? ". Cada pessoa pôde marcar mais de uma." : "."}${r.resp < 20 ? " Poucas respostas: use como pista." : ""}`));
-    r.itens.forEach(([rot, q]) => {
-      const d = el("div", "barra");
-      const t = el("div", "rot"); t.appendChild(el("span", null, c.nomes ? (c.nomes[rot] || rot) : rot)); t.appendChild(el("span", null, `${q} de ${r.resp}`));
-      const tr = el("div", "trilho"); const i = el("i"); i.style.width = (100*q/Math.max(r.resp,1)) + "%"; tr.appendChild(i);
-      d.appendChild(t); d.appendChild(tr); b.appendChild(d);
-    });
+    r.itens.forEach(([rot, q]) => b.appendChild(barra(c.nomes ? (c.nomes[rot] || rot) : rot, `${q} de ${r.resp}`, q / Math.max(r.resp, 1))));
     box.appendChild(b);
+    if(c.id === "motivos") blocosNaoVoto(box);
   });
 
   FALAS.forEach(f => {
@@ -203,20 +268,26 @@ function resumo(){
     return r.itens.slice(0,k).map(([rot,q]) => `${rot} (${q} de ${r.resp})`).join("; ") || "sem respostas";
   };
   const v = contar(bloco("votou"));
-  const naoVotou = v.itens.filter(([rot]) => rot === "Não votei" || rot === "Justifiquei").reduce((s,[,q]) => s+q, 0);
+  const semVoto = v.itens.filter(([rot]) => rot === "Não votei" || rot === "Justifiquei").reduce((s,[,q]) => s+q, 0);
   const onde = filtroBairro ? nomeBairro(filtroBairro) : (new Set(todas.map(bairroDe)).size > 1 ? "todos os bairros" : nomeBairro(bairroDe(todas[0] || {})));
+  const gm = gruposMotivos();
+  const cruzado = (campo, ordem) => cruzar(campo, ordem).map(x => `${x.g}: ${x.nv} de ${x.n}${x.nv ? ` (${x.desc} por descrédito)` : ""}`).join("; ");
+  const porIdade = cruzado("idade", ORDEM_IDADE), porTempo = cruzado("relacao", ORDEM_TEMPO), tm = tempoMediano();
   return [...prefixo,
     `Fala, ${onde}! · resumo de ${hoje}`,
     `${n} respostas. Escuta voluntária: mostra quem respondeu, não o bairro todo.`,
-    `Não votaram no 1º turno: ${naoVotou} de ${v.resp} que responderam.`,
-    `O que atrapalhou: ${top("motivos")}.`,
+    `Não votaram no 1º turno: ${semVoto} de ${v.resp} que responderam.`,
+    `Por que não votou: ${top("motivos")}.`,
+    ...(gm.n ? [`Dificuldade prática ou descrédito (${gm.n} disseram o motivo): ${gm.itens.map(([rot, q]) => `${rot.toLowerCase()} ${q}`).join("; ")}.`] : []),
+    ...(porIdade ? [`Não votaram, por idade: ${porIdade}.`] : []),
+    ...(porTempo ? [`Não votaram, por tempo de bairro: ${porTempo}.`] : []),
     `O que mais pesa em casa: ${top("dia_a_dia")}.`,
     `O que pesa mais (uma só): ${top("prioridade")}.`,
-    `Medo de perder ou ver piorar: ${top("medos")}.`,
-    contar(bloco("medos_mulheres")).resp >= 10 ? `Medos entre as mulheres: ${top("medos_mulheres")}.` : "Medos entre as mulheres: ainda são poucas respostas.",
-    `Por que muita gente muda de voto, na opinião de quem respondeu: ${top("por_que_mudam")}.`,
+    `O que mais preocupa no país: ${top("medos")}.`,
+    contar(bloco("medos_mulheres")).resp >= 10 ? `Preocupações entre as mulheres: ${top("medos_mulheres")}.` : "Preocupações entre as mulheres: ainda são poucas respostas.",
+    `O que faz alguém mudar de voto, na opinião de quem respondeu: ${top("por_que_mudam")}.`,
     `Em quem confiam para se informar: ${top("confia", 2)}.`,
-    ...(tempoMediano() ? [`Tempo mediano para responder: ${minSeg(tempoMediano().seg)}.`] : [])
+    ...(tm ? [`Tempo mediano para responder: ${minSeg(tm.seg)}. ${regraTempo(tm)}`] : [])
   ].join("\n");
 }
 
@@ -297,15 +368,15 @@ function dadosDemo(){
     for(let i=0; i<k && resto.length; i++){ const v = um(resto); res.push(v); resto = resto.filter(([x]) => x !== v); }
     return res.join(" | "); };
   const P = {
-    relacao:[["Moro aqui",18],["Tenho família aqui",3],["Trabalho aqui",1]],
+    relacao:[["Sou da ocupação ou nasci aqui",6],["Cheguei depois, há mais de 10 anos",8],["Cheguei há menos de 10 anos",6],["Não moro, mas trabalho ou tenho família aqui",3]],
     idade:[["16 a 24",4],["25 a 34",5],["35 a 59",8],["60 ou mais",5]],
     votou:[["Sim, votei",12],["Não votei",6],["Justifiquei",1],["Prefiro não dizer",1]],
-    motivos:[["Distância ou falta de condução",5],["Estava trabalhando",4],["Desânimo, não acredito mais",4],["Saúde, idade ou dificuldade de andar",3],["Não sabia onde votar",2],["Problema com título ou documento",1]],
+    motivos:[["Distância ou falta de condução",4],["Estava trabalhando ou sem tempo",4],["Não acredito mais na política",4],["Não me interesso por política",3],["Não acredito em nenhum candidato",3],["Saúde, idade ou dificuldade de andar",2],["Não sabia onde votar",2],["Problema com título ou documento",1]],
     genero:[["Mulher",12],["Homem",10],["Prefiro não dizer",1],["Outro",1]],
     dia_a_dia:[["Preço da comida e das contas",8],["Dívidas e nome sujo",5],["Trabalho e renda",6],["Saúde e fila no posto",6],["Segurança e violência",4],["Ônibus e transporte",4],["Escola e creche",3],["Futuro dos jovens",3],["Moradia e escritura",2]],
     medos:[["SUS, remédio de graça, Farmácia Popular",8],["Aposentadoria e direitos de quem trabalha",6],["Bolsa Família e outros benefícios",5],["Emprego",5],["Segurança e crime",5],["Violência contra a mulher",4],["Corrupção",4],["Mais armas nas ruas",3],["Escola, faculdade, cotas e ProUni",3],["Liberdade de falar e se manifestar",2]],
     por_que_mudam:[["Preço das coisas e dívidas",8],["Violência e crime",6],["Promessas que não foram cumpridas",6],["Cansaço, vontade de mudar",5],["O que chega no WhatsApp e nas redes",5],["Corrupção",4],["Orientação da igreja",3],["Falta de emprego",3],["Costumes e família",2],["Benefício que recebeu ou perdeu",2]],
-    confia:[["Família e vizinhos",8],["Grupos de WhatsApp",6],["YouTube, TikTok ou Instagram",4],["TV",4],["Igreja",3],["Rádio",1]],
+    confia:[["Família e vizinhos",8],["Grupos de WhatsApp",6],["YouTube, TikTok ou Instagram",4],["TV",4],["Igreja",3],["Sindicato",1],["Rádio",1]],
     origem:[["entrevista",10],["cartaz",6],["link",4],["zap",2]]
   };
   const FALAS_DEMO = {
