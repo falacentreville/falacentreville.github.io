@@ -106,10 +106,12 @@ const CONTAGENS = [
 ];
 const FALAS = [
   { id:"motivos_texto", titulo:"Por que não votou, nas palavras das pessoas" },
+  { id:"dia_a_dia_texto", titulo:"O que pesa em casa: os \"outros\", nas palavras das pessoas" },
   { id:"medos_texto", titulo:"Medos, nas palavras das pessoas" },
   { id:"por_que_mudam_texto", titulo:"Por que mudam de voto, nas palavras das pessoas" },
   { id:"mudanca", titulo:"O que mudaria" },
-  { id:"memoria", titulo:"Histórias do bairro" }
+  { id:"memoria", titulo:"Histórias do bairro" },
+  { id:"relacao_texto", titulo:"Outra ligação com o bairro" }
 ];
 
 const $ = id => document.getElementById(id);
@@ -128,6 +130,15 @@ function contar(c){
   return { base: base.length, resp: resp.length, itens: Object.entries(conta).sort((a,b) => b[1]-a[1]) };
 }
 
+// tempo para responder: mediana em segundos (ignora tempos absurdos, como aba esquecida aberta)
+function tempoMediano(){
+  const t = linhas.map(l => Number(l.duracao_seg)).filter(x => x > 0 && x < 3600).sort((a, b) => a - b);
+  if(!t.length) return null;
+  const m = t.length % 2 ? t[(t.length - 1) / 2] : (t[t.length / 2 - 1] + t[t.length / 2]) / 2;
+  return { seg: Math.round(m), n: t.length };
+}
+const minSeg = s => `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, "0")} s`;
+
 function el(tag, cls, txt){ const e = document.createElement(tag); if(cls) e.className = cls; if(txt != null) e.textContent = txt; return e; }
 
 function desenhar(){
@@ -139,6 +150,13 @@ function desenhar(){
     ? "Ainda são poucas respostas. Use como pista, não como conclusão. É uma escuta voluntária: mostra quem respondeu, não o bairro todo."
     : "É uma escuta voluntária: mostra quem respondeu, não o bairro todo. Ao divulgar, diga sempre quantas pessoas responderam.");
   const box = $("blocos"); box.innerHTML = "";
+  const tm = tempoMediano();
+  if(tm){
+    const b = el("div", "bloco");
+    b.appendChild(el("h2", null, "Tempo para responder"));
+    b.appendChild(el("p", "base", `Metade respondeu em até ${minSeg(tm.seg)} (de ${tm.n} respostas com tempo medido). A promessa no site é de uns 4 minutos.`));
+    box.appendChild(b);
+  }
 
   CONTAGENS.forEach(c => {
     const r = contar(c);
@@ -197,7 +215,8 @@ function resumo(){
     `Medo de perder ou ver piorar: ${top("medos")}.`,
     contar(bloco("medos_mulheres")).resp >= 10 ? `Medos entre as mulheres: ${top("medos_mulheres")}.` : "Medos entre as mulheres: ainda são poucas respostas.",
     `Por que muita gente muda de voto, na opinião de quem respondeu: ${top("por_que_mudam")}.`,
-    `Em quem confiam para se informar: ${top("confia", 2)}.`
+    `Em quem confiam para se informar: ${top("confia", 2)}.`,
+    ...(tempoMediano() ? [`Tempo mediano para responder: ${minSeg(tempoMediano().seg)}.`] : [])
   ].join("\n");
 }
 
@@ -205,7 +224,7 @@ function resumo(){
 // (os testes técnicos antigos ficam sempre de fora)
 let brutas = [], vazias = 0;
 // "pulou tudo": marcada pelo site ou sem nenhuma resposta (vale para as antigas também)
-const CAMPOS_RESPOSTA = ["relacao","idade","genero","votou","motivos","motivos_texto","dia_a_dia","prioridade","medos","medos_texto","por_que_mudam","por_que_mudam_texto","mudanca","confia","memoria"];
+const CAMPOS_RESPOSTA = ["relacao","relacao_texto","idade","genero","votou","motivos","motivos_texto","dia_a_dia","dia_a_dia_texto","prioridade","medos","medos_texto","por_que_mudam","por_que_mudam_texto","mudanca","confia","memoria"];
 const ehVazia = l => l.vazia === "sim" || !CAMPOS_RESPOSTA.some(c => String(l[c] || "").trim());
 const ehPiloto = l => l.origem === "teste" && /^\d{4}-\d{2}-\d{2}-v([3-9]|\d\d)/.test(l.versao || "");
 function montarTodas(){
@@ -303,6 +322,7 @@ function dadosDemo(){
     if(l.votou === "Não votei" || l.votou === "Justifiquei") l.motivos = varios(P.motivos, 2);
     ["dia_a_dia","medos","por_que_mudam"].forEach(k => l[k] = varios(P[k], 3));
     l.bairro = "centreville";
+    l.duracao_seg = 140 + Math.floor(r() * 260);
     const pesos = l.dia_a_dia.split(" | ");
     if(pesos.length >= 2) l.prioridade = pesos[0];
     l.confia = varios(P.confia, 2);

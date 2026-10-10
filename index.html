@@ -252,7 +252,7 @@ footer .credito{margin:0;font-size:13px}
 const CONFIG = {
   ENDPOINT: "https://script.google.com/macros/s/AKfycbxWutlNNs9DBleWporYzgdAvXfSzCzRM2ow4xdyfvMPuPintMMF_gqKim_zjQnr7bQ/exec",
   LINK_GRUPO: "",          // link de convite do grupo de WhatsApp (opcional)
-  VERSAO: "2026-10-09-v3",
+  VERSAO: "2026-10-09-v4",
   CONTADOR_MINIMO: 20,          // o contador da capa só aparece a partir deste número de respostas
   DIAS_DE_PAUSA: ["2026-10-25"] // regra do comitê: escuta parada no dia da eleição
 };
@@ -264,7 +264,8 @@ const BAIRRO = window.lerBairro ? lerBairro()
 /* ===== PERGUNTAS (versão 2) ===== */
 const PERGUNTAS = [
   { id:"relacao", tipo:"uma", titulo:`Qual é a sua ligação ${BAIRRO.com}?`,
-    opcoes:["Moro aqui","Trabalho aqui","Tenho família aqui","Outra"] },
+    opcoes:["Moro aqui","Trabalho aqui","Tenho família aqui","Outra"],
+    fala:"Qual? Pode falar ou escrever.", falaSe:r => r.relacao==="Outra" },
 
   { id:"idade", tipo:"uma", titulo:"Qual a sua idade?", dica:"Só a faixa. Serve para a gente saber se está ouvindo jovens e mais velhos.",
     opcoes:["16 a 24","25 a 34","35 a 59","60 ou mais","Prefiro não dizer"] },
@@ -282,7 +283,8 @@ const PERGUNTAS = [
     fala:"Quer contar o que aconteceu? Aperte e fale." },
 
   { id:"dia_a_dia", tipo:"varias", max:3, titulo:"O que mais pesa hoje na sua casa?", dica:"Pode marcar até 3.",
-    opcoes:["Preço da comida e das contas","Dívidas e nome sujo","Trabalho e renda","Saúde e fila no posto","Segurança e violência","Ônibus e transporte","Moradia e escritura","Escola e creche","Futuro dos jovens","Lazer, cultura e esporte","Outro"] },
+    opcoes:["Preço da comida e das contas","Dívidas e nome sujo","Trabalho e renda","Saúde e fila no posto","Segurança e violência","Ônibus e transporte","Moradia e escritura","Escola e creche","Futuro dos jovens","Lazer, cultura e esporte","Outro"],
+    fala:"Qual? Pode falar ou escrever.", falaSe:r => (r.dia_a_dia||[]).includes("Outro") },
 
   { id:"prioridade", tipo:"uma", titulo:"E dessas, qual pesa mais?", dica:"Escolha uma.",
     se:r => (r.dia_a_dia||[]).length >= 2, opcoesDe:r => r.dia_a_dia || [] },
@@ -366,13 +368,22 @@ function render(p){
     b.onclick=()=>escolher(p,txt,b);
     box.appendChild(b);
   });
-  const temFala = !!p.fala;
+  const temFala = mostraFala(p);
   $("p-fala").classList.toggle("hidden", !temFala);
   if(temFala){
     $("p-fala-rotulo").textContent = p.fala;
     $("p-texto").value = respostas[p.id+"_texto"] || "";
   }
   atualizarSeguir();
+}
+
+// campo de fala: sempre, ou só quando a pessoa marca "Outro" (falaSe)
+function mostraFala(p){ return !!p.fala && (!p.falaSe || p.falaSe(respostas)); }
+function atualizarFala(p){
+  const temFala = mostraFala(p), estava = !$("p-fala").classList.contains("hidden");
+  $("p-fala").classList.toggle("hidden", !temFala);
+  if(temFala && !estava){ $("p-fala-rotulo").textContent = p.fala; $("p-texto").value = respostas[p.id+"_texto"] || ""; }
+  if(!temFala && estava) pararFala();
 }
 
 function mostrarDica(p, limite){
@@ -384,7 +395,8 @@ function escolher(p,txt,b){
   if(p.tipo==="uma"){
     respostas[p.id] = respostas[p.id]===txt ? undefined : txt;
     [...$("p-opcoes").children].forEach(x=>x.setAttribute("aria-pressed", x===b && respostas[p.id] ? "true":"false"));
-    if(respostas[p.id] && !p.fala) setTimeout(()=>avancar(), 260);
+    atualizarFala(p);
+    if(respostas[p.id] && !mostraFala(p)) setTimeout(()=>avancar(), 260);
   } else {
     let arr = respostas[p.id] || [];
     if(arr.includes(txt)) arr = arr.filter(x=>x!==txt);
@@ -396,13 +408,14 @@ function escolher(p,txt,b){
     }
     respostas[p.id]=arr;
     mostrarDica(p);
+    atualizarFala(p);
     [...$("p-opcoes").children].forEach(x=>x.setAttribute("aria-pressed", arr.includes(x.lastChild.textContent)?"true":"false"));
   }
   atualizarSeguir();
 }
 
 function salvarTexto(){
-  const p=PERGUNTAS[atual]; if(!p || !p.fala) return;
+  const p=PERGUNTAS[atual]; if(!p || !mostraFala(p)) return;
   const v=$("p-texto").value.trim();
   respostas[p.id+"_texto"] = v || undefined;
 }
@@ -428,8 +441,10 @@ $("voltar").onclick = ()=>{ salvarTexto(); pararVoz(); pararFala();
   irPara(pilha.pop()); };
 $("p-texto").addEventListener("input", atualizarSeguir);
 
+let inicio = 0;   // quando a pessoa começou a responder (para medir o tempo)
 $("comecar").onclick = ()=>{
   if(MODO_ENTREVISTA){ guardar("cv_apelido", $("apelido").value.trim()); }
+  inicio = Date.now();
   respostas={}; pilha=[]; irPara(0);
 };
 
@@ -504,7 +519,7 @@ function montarRegistro(){
     let v = visivel ? respostas[p.id] : undefined;
     if(v && p.opcoesDe && !p.opcoesDe(respostas).includes(v)) v = undefined;
     r[p.id] = Array.isArray(v) ? v.join(" | ") : (v||"");
-    if(p.fala) r[p.id+"_texto"] = visivel ? (respostas[p.id+"_texto"] || "") : "";
+    if(p.fala) r[p.id+"_texto"] = (visivel && (!p.falaSe || p.falaSe(respostas))) ? (respostas[p.id+"_texto"] || "") : "";
   });
   if(r.mudanca==="" && respostas["mudanca_texto"]) r.mudanca = respostas["mudanca_texto"];
   if(r.memoria==="" && respostas["memoria_texto"]) r.memoria = respostas["memoria_texto"];
@@ -566,6 +581,7 @@ async function concluir(){
   const vazia = !algumaResposta();
   const reg = montarRegistro();
   reg.vazia = vazia ? "sim" : "";
+  reg.duracao_seg = inicio ? Math.round((Date.now() - inicio) / 1000) : "";
   const fila = ler("cv_fila", []); fila.push(reg); guardar("cv_fila", fila);
   if(vazia) guardar("cv_puladas", ler("cv_puladas", 0)+1);
   else guardar("cv_total", ler("cv_total", 0)+1);
@@ -588,7 +604,7 @@ function atualizarContagem(){
   $("contagem").textContent = txt; $("contagem-fim").textContent = txt;
 }
 
-$("proxima").onclick = ()=>{ respostas={}; pilha=[]; irPara(0); };
+$("proxima").onclick = ()=>{ inicio = Date.now(); respostas={}; pilha=[]; irPara(0); };
 window.addEventListener("online", ()=>esvaziarFila().then(p=>{ atualizarContagem(); if(p) tentarDeNovo(); }));
 
 /* ===== CONTADOR ===== */
