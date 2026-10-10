@@ -21,5 +21,5 @@ Não coletamos nome, telefone, endereço nem voto. Não recebemos áudio. As res
 
 ## Créditos
 
-Desenvolvimento: Peterson Moreira, engenheiro e morador do Centre Ville.
+Desenvolvimento: Comitê pela Democracia do Centre Ville, um grupo de moradores do bairro.
 Fotos: página "Centreville é nosso" (Facebook).
