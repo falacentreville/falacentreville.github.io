@@ -19,6 +19,8 @@ body{background:#d9d4cc;font-family:Rubik,system-ui,sans-serif;color:#151311}
 .tag{font-family:"Bebas Neue",Impact,sans-serif;font-size:22pt;letter-spacing:1px}
 h1{font-family:"Bebas Neue",Impact,sans-serif;font-weight:400;font-size:112pt;line-height:.86;margin:4mm 0 0;text-transform:uppercase}
 h1 span{background:#ffc629;padding:0 3mm;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+/* a vírgula de "Fala," passa por cima do amarelo da linha de baixo */
+h1 .sobe{background:none;padding:0;position:relative;z-index:1}
 .mega{height:.8em;width:auto;vertical-align:-.06em;transform:rotate(-12deg);color:#151311}
 .sub{font-size:26pt;font-weight:700;margin:6mm 0 2mm}
 .meio{display:grid;grid-template-columns:88mm 1fr;gap:8mm;align-items:center;margin:4mm 0}
@@ -52,7 +54,7 @@ h1 span{background:#ffc629;padding:0 3mm;box-decoration-break:clone;-webkit-box-
 <main class="folha">
   <div class="selo-teste">VERSÃO DE TESTE · não imprimir para colar</div>
   <div class="tag" id="tag">Comitê pela Democracia do Centre Ville</div>
-  <h1><span>Fala,</span> <svg class="mega" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M20 41 L21 53 L28 53 L28 44" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="4" y="25" width="9" height="14" rx="2" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M12 25 L37 13 L37 51 L12 39 Z" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="36" y="10" width="7" height="44" rx="3.5" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M49 24 Q54 32 49 40" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M55 18 Q63 32 55 46" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg><br><span id="titulo-bairro">Centre Ville!</span></h1>
+  <h1><span><span class="sobe">Fala,</span></span> <svg class="mega" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M20 41 L21 53 L28 53 L28 44" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="4" y="25" width="9" height="14" rx="2" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M12 25 L37 13 L37 51 L12 39 Z" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="36" y="10" width="7" height="44" rx="3.5" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M49 24 Q54 32 49 40" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M55 18 Q63 32 55 46" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg><br><span id="titulo-bairro">Centre Ville!</span></h1>
   <p class="sub">A gente quer ouvir você.</p>
 
   <div class="meio">
