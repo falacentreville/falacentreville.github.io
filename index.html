@@ -161,7 +161,7 @@ footer .credito{margin:0;font-size:13px}
 
   <!-- CAPA -->
   <section id="capa" class="capa">
-    <div class="aviso-voto" role="note"><b>📣 Já contamos o que ouvimos!</b>Veja o que 99 moradores disseram na <a href="o-que-o-bairro-disse.html">devolutiva da escuta</a>. A escuta continua aberta: sua voz ainda conta.</div>
+    <div class="aviso-voto" role="note"><b>📣 Já contamos o que ouvimos!</b>Veja o que 99 moradores disseram na <a href="o-que-o-bairro-disse.html">devolutiva da 1ª escuta</a>.</div>
     <figure class="foto foto-hist" id="foto-capa">
       <img id="foto-capa-img" src="img/ocupacao-1982.jpg" alt="Foto antiga em preto e branco: moradores caminhando juntos pela rua do Centre Ville, na época da ocupação" width="472" height="288">
       <figcaption id="foto-capa-legenda">Os primeiros moradores, na época da ocupação. Foto: página “Centreville é nosso”.</figcaption>
@@ -188,6 +188,7 @@ footer .credito{margin:0;font-size:13px}
     </div>
 
     <div class="pausa hidden" id="pausa"><b>Hoje é dia de eleição.</b> A escuta está em pausa e volta amanhã.</div>
+    <div class="pausa hidden" id="encerrada"><b>A 1ª escuta terminou. Obrigado, Centre Ville!</b> 99 vozes responderam. <a href="o-que-o-bairro-disse.html">Veja o que o bairro disse</a>. Em breve, uma nova escuta.</div>
     <button class="btn btn-p" id="comecar">Começar ▶</button>
 
     <p class="quem" id="quem">Quem faz: o Comitê pela Democracia do Centre Ville, grupo de moradores que também faz atividades políticas. Isto é uma escuta voluntária para entender o bairro e planejar ações. Não é pesquisa eleitoral.</p>
@@ -267,7 +268,8 @@ const CONFIG = {
   LINK_GRUPO: "",          // link de convite do grupo de WhatsApp (opcional)
   VERSAO: "2026-10-09-v6",
   CONTADOR_MINIMO: 100,          // o contador da capa só aparece a partir deste número de respostas
-  DIAS_DE_PAUSA: ["2026-10-25"] // regra do comitê: escuta parada no dia da eleição
+  DIAS_DE_PAUSA: ["2026-10-25"], // regra do comitê: escuta parada no dia da eleição
+  ENCERRADA: true                // 1ª escuta fechada em 26/10/2026; a 2ª ainda vai ser revisada
 };
 
 /* ===== BAIRRO (vem do link: ?bairro=ID; sem parâmetro é o Centre Ville) ===== */
@@ -692,7 +694,10 @@ function aplicarBairro(){
 /* ===== INÍCIO ===== */
 aplicarBairro();
 const hojeSP = seguro(()=>new Intl.DateTimeFormat("en-CA", { timeZone:"America/Sao_Paulo" }).format(new Date()), "");
-if(CONFIG.DIAS_DE_PAUSA.includes(hojeSP)){
+if(CONFIG.ENCERRADA){
+  $("encerrada").classList.remove("hidden");
+  $("comecar").classList.add("hidden");
+} else if(CONFIG.DIAS_DE_PAUSA.includes(hojeSP)){
   $("pausa").classList.remove("hidden");
   $("comecar").classList.add("hidden");
 }
