@@ -38,7 +38,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--muro);color:var(--tinta)}
-body{font-family:Rubik,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:19px;line-height:1.45;
+body{font-family:Rubik,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:19px;line-height:1.55;letter-spacing:.02em;
   min-height:100vh;min-height:100dvh;
   background:
     radial-gradient(circle at 12% 8%, rgba(255,198,41,.18) 0 120px, transparent 260px),
@@ -62,6 +62,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .foto{margin:6px 0 4px;position:relative}
 .foto img{display:block;width:100%;height:auto;border-radius:14px;border:3px solid var(--tinta);box-shadow:6px 6px 0 var(--laranja)}
 .foto-hist img{filter:sepia(.35) contrast(1.08)}
+/* capa: a moldura fica parada e a foto passeia dentro dela */
+.foto-janela{display:block;overflow:hidden;border-radius:14px;border:3px solid var(--tinta);box-shadow:6px 6px 0 var(--laranja)}
+.foto-janela img{border:0;border-radius:0;box-shadow:none;animation:passeio 22s ease-in-out infinite alternate}
+@keyframes passeio{from{transform:translate(2.5%,0) scale(1.06)}to{transform:translate(-8%,-2%) scale(1.22)}}
 .foto figcaption{font-size:13px;color:var(--suave);margin-top:10px}
 
 /* capa */
@@ -84,7 +88,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .contador b{color:var(--amarelo);font-size:22px}
 .pausa{background:#3a0d1c;border:3px solid var(--rosa);border-radius:16px;padding:14px;margin:0 0 16px;font-size:19px}
 .dica.limite{color:var(--amarelo);font-weight:700}
-.quem{font-size:15px;color:var(--suave);border-left:4px solid var(--amarelo);padding:4px 0 4px 12px;margin:18px 0}
+.capa p.quem{font-size:15px;color:var(--suave);border-left:4px solid var(--amarelo);padding:4px 0 4px 12px;margin:30px 0 18px}
 
 /* botões */
 .btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:64px;border:0;border-radius:var(--raio);
@@ -163,7 +167,7 @@ footer .credito{margin:0;font-size:13px}
   <section id="capa" class="capa">
     <div class="aviso-voto" role="note"><b>📣 2ª escuta: o bairro que a gente quer</b>Na 1ª, 99 vozes disseram o que pesa (<a href="o-que-o-bairro-disse.html">veja o resultado</a>). Agora a gente vai mais fundo, para levar pedidos concretos à Câmara e à Prefeitura.</div>
     <figure class="foto foto-hist" id="foto-capa">
-      <img id="foto-capa-img" src="img/ocupacao-1982.jpg" alt="Foto antiga em preto e branco: moradores caminhando juntos pela rua do Centre Ville, na época da ocupação" width="472" height="288">
+      <span class="foto-janela"><img id="foto-capa-img" src="img/ocupacao-1982.jpg" alt="Foto antiga em preto e branco: moradores caminhando juntos pela rua do Centre Ville, na época da ocupação" width="472" height="288"></span>
       <figcaption id="foto-capa-legenda">Os primeiros moradores, na época da ocupação. Foto: página “Centreville é nosso”.</figcaption>
     </figure>
     <h1>Fala, <span class="mega" aria-hidden="true"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" focusable="false"><path d="M20 41 L21 53 L28 53 L28 44" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="4" y="25" width="9" height="14" rx="2" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M12 25 L37 13 L37 51 L12 39 Z" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="36" y="10" width="7" height="44" rx="3.5" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M49 24 Q54 32 49 40" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M55 18 Q63 32 55 46" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg></span><br><span id="titulo-bairro">Centre Ville!</span></h1>
@@ -239,7 +243,7 @@ footer .credito{margin:0;font-size:13px}
     <div class="status" id="envio"></div>
   </section>
 
-  <footer>
+  <footer id="compromissos">
     <b>Nossos compromissos</b>
     <ul>
       <li>Não pedimos nome, telefone, endereço nem voto.</li>
@@ -379,6 +383,7 @@ function visiveis(){ return PERGUNTAS.filter(p => !p.se || p.se(respostas)); }
 function mostrar(id){
   ["capa","tela-pergunta","fim"].forEach(s => $(s).classList.toggle("hidden", s!==id));
   $("nav").classList.toggle("hidden", id!=="tela-pergunta");
+  $("compromissos").classList.toggle("hidden", id!=="capa");
   window.scrollTo(0,0);
 }
 
