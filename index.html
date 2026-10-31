@@ -13,7 +13,7 @@
 <meta property="og:locale" content="pt_BR">
 <meta property="og:url" content="https://falacentreville.github.io/">
 <meta property="og:title" content="Fala, Centre Ville!">
-<meta property="og:description" content="Este bairro nasceu da luta. Agora a gente quer te ouvir. Anônimo, uns 4 minutos, dá para falar em vez de escrever.">
+<meta property="og:description" content="Este bairro nasceu da luta. Agora a gente quer te ouvir. Anônimo, uns 3 minutos, dá para falar em vez de escrever.">
 <meta property="og:image" content="https://falacentreville.github.io/img/compartilhar.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -161,7 +161,7 @@ footer .credito{margin:0;font-size:13px}
 
   <!-- CAPA -->
   <section id="capa" class="capa">
-    <div class="aviso-voto" role="note"><b>📣 Já contamos o que ouvimos!</b>Veja o que 99 moradores disseram na <a href="o-que-o-bairro-disse.html">devolutiva da 1ª escuta</a>.</div>
+    <div class="aviso-voto" role="note"><b>📣 2ª escuta: o bairro que a gente quer</b>Na 1ª, 99 vozes disseram o que pesa (<a href="o-que-o-bairro-disse.html">veja o resultado</a>). Agora a gente vai mais fundo, para levar pedidos concretos à Câmara e à Prefeitura.</div>
     <figure class="foto foto-hist" id="foto-capa">
       <img id="foto-capa-img" src="img/ocupacao-1982.jpg" alt="Foto antiga em preto e branco: moradores caminhando juntos pela rua do Centre Ville, na época da ocupação" width="472" height="288">
       <figcaption id="foto-capa-legenda">Os primeiros moradores, na época da ocupação. Foto: página “Centreville é nosso”.</figcaption>
@@ -171,10 +171,10 @@ footer .credito{margin:0;font-size:13px}
     <p class="contador hidden" id="contador" aria-live="polite"></p>
     <p class="lead" id="lead">Este bairro nasceu de gente que não esperou ninguém fazer por ela. Agora a gente quer te ouvir.</p>
 <p>O que você disser ajuda o comitê a decidir o que fazer no bairro, e o resultado volta para todo mundo.</p>
-    <p>São poucas perguntas, uns 4 minutos. Você pode tocar nas respostas ou <b>falar</b> no microfone. Dá para ouvir cada pergunta em voz alta.</p>
+    <p>São poucas perguntas, uns 3 minutos. Você pode tocar nas respostas ou <b>falar</b> no microfone. Dá para ouvir cada pergunta em voz alta.</p>
 
     <div class="selos">
-      <div class="selo"><span class="ic" aria-hidden="true">🙈</span><div><b>Não pedimos nome, telefone nem endereço.</b>Nem em quem você votou.</div></div>
+      <div class="selo"><span class="ic" aria-hidden="true">🙈</span><div><b>Não pedimos nome, telefone nem endereço.</b>Sua resposta é anônima.</div></div>
       <div class="selo"><span class="ic" aria-hidden="true">🎤</span><div><b>Pode falar em vez de escrever.</b>A fala vira texto na hora. Não guardamos o áudio.</div></div>
       <div class="selo"><span class="ic" aria-hidden="true">✋</span><div><b>Responde só o que quiser.</b>Toda pergunta pode ser pulada.</div></div>
     </div>
@@ -266,10 +266,10 @@ footer .credito{margin:0;font-size:13px}
 const CONFIG = {
   ENDPOINT: "https://script.google.com/macros/s/AKfycbxWutlNNs9DBleWporYzgdAvXfSzCzRM2ow4xdyfvMPuPintMMF_gqKim_zjQnr7bQ/exec",
   LINK_GRUPO: "",          // link de convite do grupo de WhatsApp (opcional)
-  VERSAO: "2026-10-09-v6",
+  VERSAO: "2026-10-31-e2",
   CONTADOR_MINIMO: 100,          // o contador da capa só aparece a partir deste número de respostas
   DIAS_DE_PAUSA: ["2026-10-25"], // regra do comitê: escuta parada no dia da eleição
-  ENCERRADA: true                // 1ª escuta fechada em 26/10/2026; a 2ª ainda vai ser revisada
+  ENCERRADA: false               // true fecha a escuta na capa (a 1ª fechou em 26/10/2026)
 };
 
 /* ===== BAIRRO (vem do link: ?bairro=ID; sem parâmetro é o Centre Ville) ===== */
@@ -277,52 +277,72 @@ const BAIRRO = window.lerBairro ? lerBairro()
   : { id:"centreville", dados:{}, nome:"Centre Ville", titulo:"Centre Ville", com:"com o Centre Ville", de:"do Centre Ville" };
 
 /* ===== PERGUNTAS (versão 2) ===== */
+// 2ª escuta: cada pessoa escolhe até 2 temas e só vê o aprofundamento deles
+const TEMAS = ["Preço das contas e da comida","Segurança","Saúde","Cultura, esporte e lazer","Escritura e moradia","Rua, calçada e iluminação"];
+const temTema = (r, tema) => (r.temas||[]).includes(tema);
+const pedidosDe = r => ["contas","seguranca","saude","cultura","rua"].flatMap(k => r[k]||[])
+  .concat(temTema(r, TEMAS[4]) && ["Estou tentando regularizar","Não tenho escritura"].includes(r.escritura) ? ["Regularizar as escrituras"] : [])
+  .concat(((r.contas||r.seguranca||r.saude||r.cultura||r.rua||r.escritura) ? ["Outro"] : []));
 const PERGUNTAS = [
   { id:"relacao", tipo:"uma", titulo:`Qual é a sua ligação ${BAIRRO.com}?`,
     dica:"Serve para ouvir tanto quem fez o bairro quanto quem chegou há pouco.",
     opcoes:["Sou da ocupação ou nasci aqui","Cheguei depois, há mais de 10 anos","Cheguei há menos de 10 anos","Não moro, mas trabalho ou tenho família aqui","Outra"],
     fala:"Qual? Pode falar ou escrever.", falaSe:r => r.relacao==="Outra" },
 
+  { id:"temas", tipo:"varias", max:2, titulo:"Destes assuntos, quais você quer aprofundar?", dica:"Pode marcar até 2.",
+    opcoes:TEMAS },
+
+  { id:"contas", tipo:"varias", max:2, titulo:"Contas e comida: o que mais aperta?", dica:"Pode marcar até 2.",
+    se:r => temTema(r, TEMAS[0]),
+    opcoes:["Conta de luz","Água","Gás","Aluguel ou prestação","Mercado","Remédio","Transporte"] },
+
+  { id:"seguranca", tipo:"varias", max:2, titulo:"Segurança: o que mais te deixa inseguro?", dica:"Pode marcar até 2.",
+    se:r => temTema(r, TEMAS[1]),
+    opcoes:["Rua escura","Pouco policiamento","Tráfico e uso de drogas","Assalto ou furto","Violência contra a mulher","Trânsito e moto em alta velocidade"] },
+
+  { id:"seguranca_hora", tipo:"uma", titulo:"Em que horário você se sente mais inseguro?",
+    se:r => temTema(r, TEMAS[1]),
+    opcoes:["Manhã","Tarde","Noite","Madrugada","O dia todo"] },
+
+  { id:"saude", tipo:"varias", max:2, titulo:"Saúde: o que mais falta?", dica:"Pode marcar até 2.",
+    se:r => temTema(r, TEMAS[2]),
+    opcoes:["Consulta e fila no posto","Exames","Remédio","Dentista","Saúde mental","Atendimento aos mais velhos"] },
+
+  { id:"cultura", tipo:"varias", max:2, titulo:"Cultura, esporte e lazer: o que mais falta?", dica:"Pode marcar até 2.",
+    se:r => temTema(r, TEMAS[3]),
+    opcoes:["Campo ou quadra em bom estado","Aula de esporte","Curso e oficina","Evento de cultura (música, rap, teatro)","Espaço para criança","Lugar para os mais velhos"] },
+
+  { id:"escritura", tipo:"uma", titulo:"Escritura e moradia: como está a sua casa?",
+    se:r => temTema(r, TEMAS[4]),
+    opcoes:["Tenho escritura","Estou tentando regularizar","Não tenho escritura","Moro de aluguel","Prefiro não dizer"] },
+
+  { id:"escritura_trava", tipo:"varias", max:2, titulo:"O que trava a regularização?", dica:"Pode marcar até 2.",
+    se:r => temTema(r, TEMAS[4]) && ["Estou tentando regularizar","Não tenho escritura"].includes(r.escritura),
+    opcoes:["Custo","Documentação","Não sei por onde começar","Outro"],
+    fala:"Qual? Pode falar ou escrever.", falaSe:r => (r.escritura_trava||[]).includes("Outro") },
+
+  { id:"rua", tipo:"varias", max:2, titulo:"Rua, calçada e iluminação: o que precisa?", dica:"Pode marcar até 2.",
+    se:r => temTema(r, TEMAS[5]),
+    opcoes:["Asfalto ou buraco","Iluminação","Calçada","Placa de rua","Faixa de pedestre","Lixo e entulho"] },
+
+  { id:"rua_trecho", tipo:"texto", titulo:"Em qual trecho?",
+    dica:"Só o nome da rua ou um ponto de referência. Sem número de casa.",
+    se:r => temTema(r, TEMAS[5]),
+    fala:"Aperte e fale, ou escreva." },
+
+  { id:"pedido", tipo:"uma", titulo:"Se o comitê levasse um único pedido à Câmara, qual seria?", dica:"Escolha um.",
+    se:r => pedidosDe(r).length > 1, opcoesDe:r => pedidosDe(r),
+    fala:"Qual? Pode falar ou escrever.", falaSe:r => r.pedido==="Outro" },
+
+  { id:"ideia", tipo:"texto", titulo:"Quer contar uma ideia para o bairro?",
+    dica:"Se não quiser, é só pular. Sem nome completo de ninguém.",
+    fala:"Aperte e fale. Quando terminar, aperte de novo." },
+
   { id:"idade", tipo:"uma", titulo:"Qual a sua idade?", dica:"Só a faixa. Serve para a gente saber se está ouvindo jovens e mais velhos.",
     opcoes:["16 a 24","25 a 34","35 a 59","60 ou mais","Prefiro não dizer"] },
 
   { id:"genero", tipo:"uma", titulo:"Você é:", dica:"Serve para a gente saber o que pensam as mulheres e os homens do bairro.",
-    opcoes:["Mulher","Homem","Outro","Prefiro não dizer"] },
-
-  { id:"votou", tipo:"uma", titulo:"No 1º turno, dia 4 de outubro, você conseguiu votar?",
-    dica:"Não vamos perguntar em quem.",
-    opcoes:["Sim, votei","Não votei","Justifiquei","Não tenho título ou não preciso votar","Prefiro não dizer"] },
-
-  { id:"motivos", tipo:"varias", max:3, titulo:"Por que você não votou?", dica:"Pode marcar até 3.",
-    se:r => r.votou==="Não votei" || r.votou==="Justifiquei",
-    opcoes:["Distância ou falta de condução","Não sabia onde votar","Estava trabalhando ou sem tempo","Saúde, idade ou dificuldade de andar","Problema com título ou documento","Cuidando de criança ou familiar","Estava fora da cidade","Não me interesso por política","Não acredito em nenhum candidato","Não acredito mais na política","Outro motivo"],
-    fala:"Quer contar mais? Aperte e fale." },
-
-  { id:"dia_a_dia", tipo:"varias", max:3, titulo:"O que mais pesa hoje na sua casa?", dica:"Pode marcar até 3.",
-    opcoes:["Preço da comida e das contas","Dívidas e nome sujo","Trabalho e renda","Saúde e fila no posto","Segurança e violência","Ônibus e transporte","Moradia e escritura","Escola e creche","Futuro dos jovens","Lazer, cultura e esporte","Outro"],
-    fala:"Qual? Pode falar ou escrever.", falaSe:r => (r.dia_a_dia||[]).includes("Outro") },
-
-  { id:"prioridade", tipo:"uma", titulo:"E dessas, qual pesa mais?", dica:"Escolha uma.",
-    se:r => (r.dia_a_dia||[]).length >= 2, opcoesDe:r => r.dia_a_dia || [] },
-
-  { id:"medos", tipo:"varias", max:3, titulo:"Olhando para o país, o que mais te preocupa hoje?", dica:"Pode marcar até 3.",
-    opcoes:["SUS, remédio de graça, Farmácia Popular","Bolsa Família e outros benefícios","Aposentadoria e direitos de quem trabalha","Emprego","Escola, faculdade, cotas e ProUni","Violência contra a mulher","Mais armas nas ruas","Segurança e crime","Corrupção","Liberdade de falar e se manifestar","Respeito a negros e LGBT","Nada me preocupa","Outro"],
-    fala:"O que te preocupa? Pode falar com suas palavras." },
-
-  { id:"por_que_mudam", tipo:"varias", max:3, titulo:"Na sua opinião, o que faz alguém do bairro mudar de voto de uma eleição para outra?", dica:"Pode marcar até 3.",
-    opcoes:["Preço das coisas e dívidas","Falta de emprego","Violência e crime","Corrupção","Promessas que não foram cumpridas","Cansaço, vontade de mudar","O que chega no WhatsApp e nas redes","Orientação da igreja","Costumes e família","Benefício que recebeu ou perdeu","Outro motivo"],
-    fala:"Quer explicar melhor? Aperte e fale." },
-
-  { id:"mudanca", tipo:"texto", titulo:"Se você pudesse mudar uma coisa na sua vida ou no bairro, o que seria?",
-    dica:"Fale com calma. Não precisa ser bonito, precisa ser verdade.",
-    fala:"Aperte e fale. Quando terminar, aperte de novo." },
-
-  { id:"confia", tipo:"varias", max:2, titulo:"Em quem você mais confia para saber das coisas?", dica:"Pode marcar até 2.",
-    opcoes:["Família e vizinhos","Igreja","Grupos de WhatsApp","TV","YouTube, TikTok ou Instagram","Rádio","Associação de moradores","Sindicato","Não confio em ninguém"] },
-
-  { id:"memoria", tipo:"texto", titulo:`Tem alguma história ${BAIRRO.de} que merece ser lembrada?`,
-    dica: BAIRRO.dados.memoria_dica || "Uma festa, uma luta, uma pessoa. Sem nome completo de ninguém.",
-    fala:"Conta pra gente. Aperte e fale." }
+    opcoes:["Mulher","Homem","Outro","Prefiro não dizer"] }
 ];
 
 /* ===== ESTADO ===== */
