@@ -66,9 +66,6 @@ button{font:inherit;color:inherit;cursor:pointer}
 .foto-janela{display:block;overflow:hidden;border-radius:14px;border:3px solid var(--tinta);box-shadow:6px 6px 0 var(--laranja)}
 .foto-janela img{border:0;border-radius:0;box-shadow:none;animation:passeio 22s ease-in-out infinite alternate}
 @keyframes passeio{from{transform:translate(2.5%,0) scale(1.06)}to{transform:translate(-8%,-2%) scale(1.22)}}
-.musica{margin:0 0 14px}
-.musica button{font:inherit;font-size:17px;font-weight:700;color:var(--tinta);background:var(--muro2);border:2px solid var(--amarelo);border-radius:12px;padding:10px 14px;min-height:48px;cursor:pointer}
-.musica iframe{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:12px}
 .foto figcaption{font-size:13px;color:var(--suave);margin-top:10px}
 
 /* capa */
@@ -175,7 +172,6 @@ footer .credito{margin:0;font-size:13px}
     </figure>
     <h1>Fala, <span class="mega" aria-hidden="true"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" focusable="false"><path d="M20 41 L21 53 L28 53 L28 44" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="4" y="25" width="9" height="14" rx="2" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M12 25 L37 13 L37 51 L12 39 Z" fill="#ffc629" stroke="#151311" stroke-width="3" stroke-linejoin="round"/><rect x="36" y="10" width="7" height="44" rx="3.5" fill="#ff6b2c" stroke="#151311" stroke-width="3"/><path d="M49 24 Q54 32 49 40" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M55 18 Q63 32 55 46" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg></span><br><span id="titulo-bairro">Centre Ville!</span></h1>
     <div class="faixa" id="faixa">Desde 16 de julho de 1982, na luta</div>
-    <div class="musica" id="musica"><button type="button" id="btn-musica">🎵 Ouvir Romaria, com Elis Regina</button></div>
     <p class="contador hidden" id="contador" aria-live="polite"></p>
     <p class="lead" id="lead">Este bairro nasceu de gente que não esperou ninguém fazer por ela. Agora a gente quer te ouvir.</p>
 <p>O que você disser ajuda o comitê a decidir o que fazer no bairro, e o resultado volta para todo mundo.</p>
@@ -255,7 +251,7 @@ footer .credito{margin:0;font-size:13px}
       <li>As respostas ficam com o comitê e só são divulgadas somadas, sem nada que identifique alguém.</li>
       <li>Não repassamos respostas nem contatos a partidos, candidatos ou campanhas.</li>
       <li>Contamos ao bairro o que ouvimos: veja a <a href="o-que-o-bairro-disse.html">devolutiva</a>.</li>
-      <li>Contamos as visitas desta página de forma anônima, sem cookies (GoatCounter). A música só carrega se você tocar no botão; aí o YouTube pode registrar dados da visita.</li>
+      <li>Contamos as visitas desta página de forma anônima, sem cookies (GoatCounter).</li>
     </ul>
     <p class="credito" id="credito">Feito pelo Comitê pela Democracia do Centre Ville, um grupo de moradores do bairro.</p>
   </footer>
@@ -384,24 +380,10 @@ function ler(k, p){
 /* ===== NAVEGAÇÃO ===== */
 function visiveis(){ return PERGUNTAS.filter(p => !p.se || p.se(respostas)); }
 
-// o YouTube só carrega depois do toque; ao sair da capa o player é removido e a música para
-const BOTAO_MUSICA = $("btn-musica");
-BOTAO_MUSICA.onclick = () => {
-  const f = document.createElement("iframe");
-  f.src = "https://www.youtube-nocookie.com/embed/7U4PgQ-YhKY?autoplay=1&rel=0";
-  f.title = "Romaria, com Elis Regina (YouTube)";
-  f.allow = "autoplay; encrypted-media";
-  f.referrerPolicy = "strict-origin-when-cross-origin";
-  f.allowFullscreen = true;
-  $("musica").replaceChildren(f);
-};
-function fecharMusica(){ $("musica").replaceChildren(BOTAO_MUSICA); }
-
 function mostrar(id){
   ["capa","tela-pergunta","fim"].forEach(s => $(s).classList.toggle("hidden", s!==id));
   $("nav").classList.toggle("hidden", id!=="tela-pergunta");
   $("compromissos").classList.toggle("hidden", id!=="capa");
-  if(id!=="capa") fecharMusica();
   window.scrollTo(0,0);
 }
 
